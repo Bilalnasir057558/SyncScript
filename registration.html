@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SyncScript — Create Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background-color: #0b1929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+      padding: 24px;
+    }
+
+    .outer-border {
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 44px 48px;
+      width: 100%;
+    }
+
+    .brand {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #0b1929;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #6b7a8d;
+      margin-bottom: 32px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #3a4a5c;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #f0f3f7;
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: #0b1929;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    input::placeholder {
+      color: #9aa5b4;
+    }
+
+    input:focus {
+      background: #ffffff;
+      border-color: #2a90d9;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #9aa5b4;
+      margin-top: 6px;
+    }
+
+    .error {
+      font-size: 12px;
+      color: #e05252;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: #0f3460;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover { background: #164080; }
+    .btn:active { transform: scale(0.98); }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6b7a8d;
+    }
+
+    .login-link a {
+      color: #2a90d9;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .login-link a:hover { text-decoration: underline; }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      color: #1d9e75;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="outer-border">
+    <div class="card">
+      <h1 class="brand">SyncScript</h1>
+      <p class="subtitle">Create an account for effective research collaboration</p>
+
+      <div class="field">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" placeholder="E.g. Dr. Julian Vane" />
+        <span class="error" id="name-error">Please enter your full name.</span>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="j.vane@university.edu" />
+        <span class="error" id="email-error">Please enter a valid email address.</span>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" />
+        <span class="hint">Minimum 12 characters recommended.</span>
+        <span class="error" id="pass-error">Password must be at least 12 characters.</span>
+      </div>
+
+      <button class="btn" onclick="handleSubmit()">
+        Create Account &#8594;
+      </button>
+
+      <p class="success-msg" id="success-msg">&#10003; Account created successfully!</p>
+
+      <p class="login-link">Already have an account? <a href="#">Log in here</a></p>
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit() {
+      let valid = true;
+
+      const name = document.getElementById('fullname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      const nameErr = document.getElementById('name-error');
+      const emailErr = document.getElementById('email-error');
+      const passErr = document.getElementById('pass-error');
+      const successMsg = document.getElementById('success-msg');
+
+      nameErr.style.display = 'none';
+      emailErr.style.display = 'none';
+      passErr.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      if (!name) {
+        nameErr.style.display = 'block';
+        valid = false;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        emailErr.style.display = 'block';
+        valid = false;
+      }
+
+      if (password.length < 12) {
+        passErr.style.display = 'block';
+        valid = false;
+      }
+
+      if (valid) {
+        successMsg.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

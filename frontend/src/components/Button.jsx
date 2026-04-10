@@ -9,7 +9,7 @@ export default function Button({
   ...props
 }) {
   const base =
-    'px-4 py-2 rounded-lg text-md font-medium hover:scale-105 transition focus:outline-none cursor-pointer';
+    'px-4 py-2 rounded-lg text-md font-bold hover:scale-105 transition focus:outline-none cursor-pointer';
 
   const variants = {
     blue: 'bg-[#0B3C5D] text-white hover:bg-[#1d5377]',

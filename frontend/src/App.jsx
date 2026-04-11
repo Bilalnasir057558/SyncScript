@@ -1,20 +1,13 @@
 import { useState } from 'react'
 import './App.css'
-import Input from './components/Input'
+import Button from './components/Button'
 
 function App() {
-  // const [name, setName] = useState("")
-
-  // return (
-  //   <div>
-  //     <Input 
-  //       type="text"
-  //       value={name}
-  //       onChange={e => setName(e.target.value)}
-  //       placeholder="E.g. Dr. Julian Vane"
-  //     />
-  //   </div>
-  // )
+  return (
+    <div className='m-10'>
+      <Button variant='gray' children={"Sign In"}/>
+    </div>
+  )
 }
 
 export default App

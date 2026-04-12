@@ -18,13 +18,28 @@ export default function Login() {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
-    if (!trimmedEmail || !trimmedPassword) {
-      setError("Email and password cannot be empty.");
+    if(!trimmedEmail && !trimmedPassword) {
+      setError("Email and Password cannot be empty.");
+      setEmail("");
+      setPassword("");
+      return;
+    }
+    else if (!trimmedPassword) {
+      setError("Password cannot be empty.");
+      setPassword("");
+      setEmail("");
+      return;
+    }
+    else if(!trimmedEmail) {
+      setError("Email cannot be empty.");
+      setPassword("");
+      setEmail("");
       return;
     }
 
     if (trimmedPassword.length < 8) {
       setError("Password must be at least 8 characters long.");
+      setPassword("");
       return;
     }
 

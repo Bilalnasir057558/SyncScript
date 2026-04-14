@@ -5,13 +5,18 @@ export default function AddResourceForm() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [fileSelected, setFileSelected] = useState(null);
+  const [isOpen, setIsOpen] = useState(true);
 
-  return (
+  const onClose = () => {
+    setIsOpen(false);
+  }
+
+  return isOpen && (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center z-50">
       <div className="bg-white w-100 rounded-lg relative p-5">
         <button
           className="top-3 right-3 text-gray-500 absolute"
-          onClick={"onClose"}
+          onClick={onClose}
         >
           ✕
         </button>

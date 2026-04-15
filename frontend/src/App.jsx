@@ -6,8 +6,8 @@ import CreateVaultModal from './components/CreateVault';
 
 function App() {
   return (
-    // <DashboardPage />
-    <AddResourceForm />
+    <DashboardPage />
+    // <AddResourceForm />
   )
 }
 

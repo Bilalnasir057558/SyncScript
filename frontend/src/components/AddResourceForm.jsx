@@ -57,8 +57,8 @@ export default function AddResourceForm() {
 
   return (
     isOpen && (
-      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center z-50">
-        <div className="bg-white w-100 rounded-lg relative p-5">
+      <div className="min-h-screen bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center p-10">
+        <div className="w-sm md:w-lg max-w-lg bg-white rounded-xl relative p-5">
           <button
             className="top-3 right-3 text-gray-500 absolute"
             onClick={onClose}
@@ -81,7 +81,10 @@ export default function AddResourceForm() {
               <Input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if(error) setError("");
+                }}
                 placeholder="e.g. Critical Analysis of Modernist Archives"
                 required
               />
@@ -94,7 +97,10 @@ export default function AddResourceForm() {
               <Input
                 type="text"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  if(error) setError("");
+                }}
                 placeholder="https://doi.org/10.1016/..."
                 required
               />
@@ -117,10 +123,13 @@ export default function AddResourceForm() {
                 </div>
 
                 <h3 className="text-[#00263F] text-lg font-semibold">
-                  Upload Files
+                  Upload File
                 </h3>
                 <p className="text-gray-500 text-sm">
-                  Upload PDFs, monographs, or raw datasets here (Max 50MB)
+                  Upload PDF, monograph, or raw datasets here (Max 50MB) 
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Only one file supported
                 </p>
 
                 {fileSelected && (

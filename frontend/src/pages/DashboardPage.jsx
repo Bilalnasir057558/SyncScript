@@ -21,7 +21,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-10 bg-gray-100 min-h-screen">
+    <div className="p-4 md:p-10 bg-gray-100 min-h-screen">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -39,7 +39,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* Dynamic Vaults */}
         {vaults.length > 0 ? (
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         {/* Start New Vault Card */}
         <div
           onClick={() => setOpen(true)}
-          className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100 transition"
+          className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-[150px] cursor-pointer hover:bg-gray-100 transition"
         >
           <div className="text-center text-gray-400">
             <p className="text-2xl">+</p>

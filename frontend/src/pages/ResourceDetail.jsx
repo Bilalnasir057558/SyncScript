@@ -19,9 +19,8 @@ export default function ResourceDetail() {
   const textareaRef = useRef(null);
 
   const handleSubmit = () => {
-
-    if(!noteText) {
-      alert('invalid annotation')
+    if (!noteText) {
+      alert("invalid annotation");
       return;
     }
 
@@ -29,13 +28,13 @@ export default function ResourceDetail() {
       user: "Default User",
       date: "Oct 24, 2024",
       time: "9:42 AM",
-      text: noteText
-    }
+      text: noteText,
+    };
 
-    setAnnotations(prev => [newAnnotation, ...prev])
+    setAnnotations((prev) => [newAnnotation, ...prev]);
     alert("Annotation created successfully");
     setNoteText("");
-  }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
@@ -83,48 +82,53 @@ export default function ResourceDetail() {
               </div>
 
               {/* Note Drafting Area */}
-                <div className="flex flex-col gap-3">
-                  <Editor
-                    apiKey={import.meta.env.VITE_TINY_MCE_EDITOR_API_KEY}
-                    value={noteText}
-                    onInit={(_evt, editor) => (editorRef.current = editor)}
-                    onEditorChange={(newValue) => {
-                      setNoteText(newValue);
-                    }}
-                    init={{
-                      height: 300,
-                      menubar: false,
-                      plugins: [
-                        "advlist",
-                        "autolink",
-                        "lists",
-                        "link",
-                        "image",
-                        "charmap",
-                        "anchor",
-                        "searchreplace",
-                        "visualblocks",
-                        "code",
-                        "fullscreen",
-                        "insertdatetime",
-                        "media",
-                        "table",
-                        "preview",
-                        "help",
-                        "wordcount",
-                      ],
-                      toolbar:
-                        "undo redo | blocks | " +
-                        "bold italic forecolor | alignleft aligncenter " +
-                        "alignright alignjustify | bullist numlist outdent indent | " +
-                        "removeformat | help",
-                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-                    }}
-                  />
-                  <Button onClick={handleSubmit} variant="blue" className="px-8 rounded-lg self-start">
-                    Save Note
-                  </Button>
-                </div>
+              <div className="flex flex-col gap-3">
+                <Editor
+                  apiKey={import.meta.env.VITE_TINY_MCE_EDITOR_API_KEY}
+                  value={noteText}
+                  onInit={(_evt, editor) => (editorRef.current = editor)}
+                  onEditorChange={(newValue) => {
+                    setNoteText(newValue);
+                  }}
+                  init={{
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                      "advlist",
+                      "autolink",
+                      "lists",
+                      "link",
+                      "image",
+                      "charmap",
+                      "anchor",
+                      "searchreplace",
+                      "visualblocks",
+                      "code",
+                      "fullscreen",
+                      "insertdatetime",
+                      "media",
+                      "table",
+                      "preview",
+                      "help",
+                      "wordcount",
+                    ],
+                    toolbar:
+                      "undo redo | blocks | " +
+                      "bold italic forecolor | alignleft aligncenter " +
+                      "alignright alignjustify | bullist numlist outdent indent | " +
+                      "removeformat | help",
+                    content_style:
+                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                  }}
+                />
+                <Button
+                  onClick={handleSubmit}
+                  variant="blue"
+                  className="px-8 rounded-lg self-start"
+                >
+                  Save Note
+                </Button>
+              </div>
 
               {/* Placeholder for Dynamic Note Cards */}
               {annotations.length > 0 ? (
@@ -132,60 +136,55 @@ export default function ResourceDetail() {
                   <AnnotationCard key={index} {...note} />
                 ))
               ) : (
-                <p className="text-gray-400 col-span-3 text-center">
-            No annotations yet. Create one to get started 
-          </p>
+                <p className="text-gray-400 col-span-3 text-center border-2 border-dashed rounded-xl p-5">
+                  No annotations yet.
+                </p>
               )}
             </div>
 
             {/* Right Column: Insight Sidebar (4/12) */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
-              
-              
-              {/* <Card className="p-0">
-                <div className="h-40 bg-[url('/src/assets/insight-bg.png')] bg-cover bg-center flex items-end p-6 relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                  <h3 className="relative text-white font-bold text-lg">
-                    Resource Insight
-                  </h3>
-                </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
-                        Complexity
-                      </p>
-                      <p className="text-sm font-bold text-[#0B3C5D]">
-                        Academic (PhD)
-                      </p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
-                        Time to Digest
-                      </p>
-                      <p className="text-sm font-bold text-[#0B3C5D]">
-                        45 mins
-                      </p>
-                    </div>
+              <div className="h-40 bg-[url('/src/assets/insight-bg.png')] bg-cover bg-center flex items-end p-6 relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <h3 className="relative text-white font-bold text-lg">
+                  Resource Insight
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Complexity
+                    </p>
+                    <p className="text-sm font-bold text-[#0B3C5D]">
+                      Academic (PhD)
+                    </p>
                   </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      Time to Digest
+                    </p>
+                    <p className="text-sm font-bold text-[#0B3C5D]">45 mins</p>
+                  </div>
+                </div>
 
-                  <div className="mt-8 bg-[#0B3C5D] p-6 rounded-2xl text-white">
-                    <p className="text-xs font-bold mb-4">Shared With</p>
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="flex -space-x-2">
-                        <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] bg-slate-400"></div>
-                        <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] bg-slate-500"></div>
-                        <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] flex items-center justify-center bg-sky-800 text-[10px]">
-                          +4
-                        </div>
+                <div className="mt-8 bg-[#0B3C5D] p-6 rounded-2xl text-white">
+                  <p className="text-xs font-bold mb-4">Shared With</p>
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="flex -space-x-2">
+                      <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] bg-slate-400"></div>
+                      <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] bg-slate-500"></div>
+                      <div className="w-8 h-8 rounded-full border-2 border-[#0B3C5D] flex items-center justify-center bg-sky-800 text-[10px]">
+                        +4
                       </div>
                     </div>
-                    <button className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
-                      Invite Researcher
-                    </button>
                   </div>
+                  <button className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+                    Invite Researcher
+                  </button>
                 </div>
-              </Card> */}
+              </div>
+              ={" "}
             </div>
           </div>
         </main>

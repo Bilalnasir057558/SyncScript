@@ -1,4 +1,5 @@
 import Button from "./Button";
+import { Link } from "react-router";
 
 export default function HeroSection({
     sectionRef
@@ -11,7 +12,7 @@ export default function HeroSection({
                 <p className="text-[#BFDBFE] text-md md:text-lg font-light text-center mb-4">A professional platform for students and researchers to save, organize,
 and share research resources in collaborative Vaults.</p>
                 <div className="flex flex-col md:flex-row gap-4">
-                    <Button className="bg-white text-[#00263F] hover:text-white" children="Get Started"/>
+                    <Link to={'/register'} className="bg-white text-[#00263F] hover:text-white hover:bg-[#1d5377] px-4 py-2 rounded-lg text-md font-bold hover:scale-105 transition focus:outline-none cursor-pointer" children="Get Started"/>
                     <Button className="bg-transparent outline-1" children="Learn More" />
                 </div>
             </div>

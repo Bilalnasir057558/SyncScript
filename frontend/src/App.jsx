@@ -9,9 +9,9 @@ import VaultCard from './components/VaultCard';
 
 function App() {
   return (
-    <DashboardPage />
+    // <DashboardPage />
     // <AddResourceForm />
-    // <ResourceDetail/>
+    <ResourceDetail/>
     // <Navbar />
     // <VaultCard/>
   )

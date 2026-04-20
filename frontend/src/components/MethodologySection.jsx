@@ -1,6 +1,8 @@
-export default function MethodologySection() {
+export default function MethodologySection({
+  sectionRef
+}) {
   return (
-    <div className="min-h-screen py-12 px-5 bg-[#F2F4F7] flex flex-col gap-22">
+    <div ref={sectionRef} className=" py-12 px-5 bg-[#F2F4F7] flex flex-col gap-22">
       <div className="w-2/3 md:w-1/2">
         <p className="font-bold text-[12px] text-[#006492]">METHODOLOGY</p>
         <h1 className="font-semibold text-[#00263F] text-3xl md:text-4xl">

@@ -1,9 +1,13 @@
 import Icon from "./Icon";
 import backgroundImg from "../assets/Background.png";
+import { useRef } from "react";
 
-export default function FeaturesSection() {
+export default function FeaturesSection({
+  sectionRef
+}) {
+
   return (
-    <div className="min-h-screen py-12 px-5 flex flex-col gap-10">
+    <div ref={sectionRef} className=" py-12 px-5 flex flex-col gap-10">
       <div className="w-2/3 md:w-1/2">
         <p className="font-bold text-[12px] text-[#006492]">
           CORE INFRASTRUCTURE

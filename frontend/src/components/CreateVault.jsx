@@ -2,24 +2,23 @@ import { useState } from "react";
 import Input from "./Input";
 import Button from "./Button";
 
-export default function CreateVaultModal({ onClose }) {
-
+export default function CreateVaultModal({ onClose, onCreate }) {
   const [vaultName, setVaultName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
-  
-   const handleSubmit = () => {
+
+  const handleSubmit = () => {
     if (!vaultName.trim()) {
       setError("Vault name is required");
       return;
     }
 
-     const vaultData = {
+    const vaultData = {
       name: vaultName,
       description: description,
     };
 
-    console.log("Vault Data:", vaultData);
+    onCreate(vaultData); //  send data to Dashboard
 
     setVaultName("");
     setDescription("");
@@ -31,7 +30,6 @@ export default function CreateVaultModal({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       
-      {/* Modal Box */}
       <div className="bg-white w-[400px] rounded-xl shadow-lg p-5 relative">
 
         {/* Close Button */}
@@ -46,25 +44,33 @@ export default function CreateVaultModal({ onClose }) {
         <h2 className="text-lg font-bold text-[#0B3C5D]">
           Create New Vault
         </h2>
+
         <p className="text-xs text-gray-500 mb-4">
           Define a new isolated sanctuary for your research materials.
         </p>
 
         {/* Form */}
         <div className="flex flex-col gap-3">
+          
           <label className="text-xs text-gray-600">Vault Name</label>
-          <Input   
+          <Input
             value={vaultName}
             onChange={(e) => {
-              setVaultName(e.target.value);  
+              setVaultName(e.target.value);
               if (error) setError("");
             }}
             onBlur={() => {
               if (!vaultName.trim()) {
                 setError("Vault name is required");
-                }
-              }} 
-            placeholder="e.g. Comparative Literature 2024" />
+              }
+            }}
+            placeholder="e.g. Comparative Literature 2024"
+          />
+
+          {/* Error */}
+          {error && (
+            <p className="text-red-500 text-xs">{error}</p>
+          )}
 
           <label className="text-xs text-gray-600">Description</label>
           <textarea
@@ -81,15 +87,9 @@ export default function CreateVaultModal({ onClose }) {
             Cancel
           </Button>
 
-          <Button onClick={handleSubmit} >
+          <Button onClick={handleSubmit}>
             Create Vault →
           </Button>
-
-          {error && (
-          <p className="text-red-500 text-xs mt-2">
-          {error}
-          </p>
-          )}
         </div>
       </div>
     </div>

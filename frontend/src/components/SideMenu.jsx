@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Icon from './Icon';
 import Button from './Button';
 
-export default function SideMenu() {
-const [activeItem, setActiveItem] = useState('My Vaults');
+export default function SideMenu({activeItem, setActiveItem}) {
 
 const menuItems = [
   { name: 'Dashboard', iconName: 'dashboard'},

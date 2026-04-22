@@ -13,7 +13,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "node src/index.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

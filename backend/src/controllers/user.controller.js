@@ -3,20 +3,27 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-const generateAccessAndRefreshToken = (userId) => {
-    const user = await User.findById(userId);
-
-    if(!user) {
-        throw new ApiError(500, 'Something went wrong while generating tokens.');
+const generateAccessAndRefreshToken = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+    
+        if(!user) {
+            throw new ApiError(500, 'Something went wrong while creating tokens.');
+        }
+    
+        const accessToken = await user.generateAccessToken();
+        const refreshToken = await user.generateRefreshToken();
+ 
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false }); // bypass validation b/c only refresh token is changed
+    
+        return {
+            accessToken, 
+            refreshToken
+        };
+    } catch (error) {
+        throw new  ApiError(500, 'Something went wrong while generating tokens.');
     }
-
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-
-    user.refreshToken = refreshToken;
-    user.save({ validateBeforeSave: false }); // bypass validation b/c only refresh token is changed
-
-    return {accessToken, refreshToken};
 }
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -75,7 +82,9 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // find user in db
-    const user = await User.findOne(email);
+    const user = await User.findOne({
+        email
+    });
 
     if(!user) {
         throw new ApiError(400, 'Email does not exist.');
@@ -89,7 +98,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // generate tokens
-    const {accessToken, refreshToken} = generateAccessAndRefreshToken(user._id);
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
 
     // extract user without password and refresh token to show in res
     const validUser = await User.findById(user._id).select("-password -refreshToken"); 
@@ -110,7 +119,9 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
         new ApiResponse(
             200, 
-            showUser, 
+            {
+                user: validUser, accessToken, refreshToken
+            },
             'User logged in successfully.'
         )
     )

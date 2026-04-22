@@ -3,6 +3,22 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+const generateAccessAndRefreshToken = (userId) => {
+    const user = await User.findById(userId);
+
+    if(!user) {
+        throw new ApiError(500, 'Something went wrong while generating tokens.');
+    }
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+    user.save({ validateBeforeSave: false }); // bypass validation b/c only refresh token is changed
+
+    return {accessToken, refreshToken};
+}
+
 const registerUser = asyncHandler(async (req, res) => {
   // get data from the user
   const { username, fullName, email, password } = req.body;
@@ -47,6 +63,60 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, confirmUser, "User registered successfully."));
 });
 
+const loginUser = asyncHandler(async (req, res) => {
+
+    // get details from the user
+    const {email, password} = req.body;
+
+    // validate
+    if([email, password].some(field => 
+        !field || (typeof field === "string" && !field.trim()))) {
+            throw new ApiError(400, 'All fields are required.');
+    }
+
+    // find user in db
+    const user = await User.findOne(email);
+
+    if(!user) {
+        throw new ApiError(400, 'Email does not exist.');
+    }
+
+    // if email matches => match the password
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if(!isPasswordValid) {
+        throw new ApiError(400, 'Password is wrong.');
+    }
+
+    // generate tokens
+    const {accessToken, refreshToken} = generateAccessAndRefreshToken(user._id);
+
+    // extract user without password and refresh token to show in res
+    const validUser = await User.findById(user._id).select("-password -refreshToken"); 
+
+    if(!validUser) {
+        throw new ApiError(500, 'Something went wrong while signing in.');
+    }
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    // return tokens in cookies
+    return res.status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(
+            200, 
+            showUser, 
+            'User logged in successfully.'
+        )
+    )
+})
+
 export {
-    registerUser
+    registerUser,
+    loginUser
 }

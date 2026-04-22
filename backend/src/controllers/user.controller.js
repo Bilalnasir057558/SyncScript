@@ -27,7 +27,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // if not exist -> create user in db
   const user = await User.create({
-    username,
+    username: username.toLowerCase(),
     fullName,
     email,
     password,

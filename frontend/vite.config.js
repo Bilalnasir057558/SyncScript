@@ -6,4 +6,16 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  css: {
+    devSourcemap: true,
+  },
+  build: {
+    sourcemap: false,
+  },
+  server: {
+    // This helps bypass some CSP "eval" issues in local dev
+    hmr: {
+      overlay: false,
+    }
+  }
 })

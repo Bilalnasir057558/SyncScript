@@ -187,11 +187,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
-
-    console.log(oldRefreshToken);
-    console.log(accessToken)
-    console.log(refreshToken);
-
+    
     // replace old token with new token
     user.refreshToken = refreshToken;
     user.save( {validateBeforeSave: false} );

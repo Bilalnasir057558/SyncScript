@@ -16,7 +16,7 @@ router.route('/logout').post(
 
 router.route('/refresh-token').post(refreshAccessToken);
 
-router.route('/me').post(
+router.route('/me').get(
     verifyJWT,
     getCurrentUser
 )

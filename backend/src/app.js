@@ -27,5 +27,11 @@ app.use(express.static('public'));
 // allows access to req.cookies
 app.use(cookieParser());
 
+// Route import
+import userRouter from "./routes/user.routes.js";
+
+// Route declaration -> it sends control to the user router. 
+app.use('/api/v1/users', userRouter);
+
 
 export {app}

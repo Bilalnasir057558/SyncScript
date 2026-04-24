@@ -29,9 +29,10 @@ app.use(cookieParser());
 
 // Route import
 import userRouter from "./routes/user.routes.js";
+import vaultRouter from "./routes/vault.routes.js";
 
 // Route declaration -> it sends control to the user router. 
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/vaults', vaultRouter);
 
 export {app}

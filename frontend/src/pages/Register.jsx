@@ -20,6 +20,7 @@ export default function Register() {
     const handleChange = (e) => {
         const {name, value} = e.target;
         setFormData({...formData, [name]: value});
+        setStatusMessage('');
     }
 
     const handleSubmit = async (e) => {
@@ -40,12 +41,20 @@ export default function Register() {
                 formData,
             );
             console.log(response.data);
-            setStatusMessage(response.success ? 'User registered successfully' : 'Registration failed')
-        } catch {
-            setStatusMessage('Network error');
+            setStatusMessage(response.status === 200 ? 'User registered successfully' : 'Registration failed');
+            if(response.status === 200) {
+                setFormData({
+                    username: '',
+                    fullName: '',
+                    email: '',
+                    password: ''
+                });
+            }
+            setTimeout(() => navigate('/login'), 3000);
+        } catch (error) {
+            setStatusMessage(error.status === 409 ? 'User already exist' : error.message);
         } finally {
             setLoading(false);
-            setFormData({});
         }
     }
 
@@ -54,7 +63,7 @@ export default function Register() {
         if(!formData.username) newErrors.username = 'Username is required';
         if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) newErrors.email = 'Valid email is required';
         if(!formData.fullName) newErrors.fullName = 'Full name is required';
-        if(formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+        if(formData.password?.length < 6) newErrors.password = 'Password must be at least 6 characters';
         return newErrors;
     }
 
@@ -136,7 +145,7 @@ export default function Register() {
                     </Button>
 
                     {statusMessage && (
-                        <p className="text-green-600">{statusMessage}</p>
+                        <p className={`text-sm rounded-lg px-4 py-3 mt-2 border ${statusMessage.includes('successfully') ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'}`}>{statusMessage}</p>
                     )}
                   </form>
         

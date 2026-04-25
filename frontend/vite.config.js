@@ -13,9 +13,16 @@ export default defineConfig({
     sourcemap: false,
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      }
+    },
     // This helps bypass some CSP "eval" issues in local dev
     hmr: {
       overlay: false,
     }
-  }
+  },
+  
 })

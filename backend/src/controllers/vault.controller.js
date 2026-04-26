@@ -103,6 +103,83 @@ const getUserVaults = asyncHandler(async (req, res) => {
     );
 })
 
+const getVaultById = asyncHandler(async (req, res) => {
+
+    if(!req.user?._id) {
+        throw new ApiError(401, 'Unauthorized request.');
+    }
+
+    // get vaultId and userId
+    const userId = req.user.id
+    const {vaultId} = req.params;
+
+    // get vault from the db
+    const vault = await Vault.findById(vaultId);
+
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found.');
+    }
+
+    // check if the user is authorized or not (owner or member can access)
+    const isCreator = vault.createdBy.toString() === userId;
+    const membership = await VaultMember.find({
+        userId,
+        vaultId
+    }).lean();
+
+    if(!isCreator || !membership) {
+        throw new ApiError(403, "You don't have access to this vault.");
+    }
+
+    // at this point, user has access
+
+    // finding user role in this vault
+    let userRole;
+    if(isCreator) {
+        userRole = 'Owner';
+    } else {
+        userRole = membership.role;
+    }
+
+    // find details of all members of this vault
+    const members = await VaultMember
+        .find({ vaultId })
+        .populate('userId', 'username email') // JOIN with Users
+        .lean();
+    
+    
+    // format response
+    const formattedMembers = members.map(member => ({
+        id: member._id,
+        userId: member.userId._id,
+        username: member.userId.username,
+        email: member.userId.email,
+        role: member.role,
+        addedAt: member.addedAt
+    }));
+
+    const responseData = {
+        id: vault._id,
+        name: vault.name,
+        description: vault.description,
+        createdBy: vault.createdBy,
+        createdAt: vault.createdAt,
+        updatedAt: vault.updatedAt,
+        userRole: userRole,
+        members: formattedMembers
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            responseData,
+            'Vault fetched successfully.'
+        )
+    );
+})
+
 export {
     createVault,
     getUserVaults

@@ -34,9 +34,6 @@ const createVault = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Something went wrong while creating a vault.');
     }
 
-    if(!vaultMember) {
-        throw new ApiError(500, 'Error creating vaultMember entry');
-    }
 
     return res
     .status(200)
@@ -207,7 +204,7 @@ const updateVault = asyncHandler(async (req, res) => {
     }
 
     // Authorize user => Only owner can update the vault
-    const isCreator = vault.createdBy.toString() === userId;
+    const isCreator = vault.createdBy.toString() === userId.toString();
 
     if(!isCreator) {
         throw new ApiError(403, "Only vault owner can update vault.");
@@ -244,7 +241,7 @@ const deleteVault = asyncHandler(async (req, res) => {
     }
 
     // authorize user
-    const isCreator = vault.createdBy.toString() === userId;
+    const isCreator = vault.createdBy.toString() === userId.toString();
     if(!isCreator) {
         throw new ApiError(403, "Only vault owner can delete vault.");
     }

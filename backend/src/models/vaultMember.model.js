@@ -12,6 +12,10 @@ const VaultMemberSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ['Owner', 'Contributor', 'Viewer']
+    },
+    addedAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

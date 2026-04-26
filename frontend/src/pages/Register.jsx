@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {useNavigate} from "react-router";
-import axios from "axios";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import { registerUser } from "../api/auth.api";
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -36,10 +36,8 @@ export default function Register() {
         setLoading(true);
 
         try {
-            const response = await axios.post(
-                '/api/v1/users/register',
-                formData,
-            );
+
+            const response = await registerUser(formData);
             console.log(response.data);
             setStatusMessage(response.status === 200 ? 'User registered successfully' : 'Registration failed');
             if(response.status === 200) {

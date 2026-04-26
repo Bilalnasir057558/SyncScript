@@ -152,24 +152,26 @@ Backend will have:
 
 ## 📦 RESOURCE ENDPOINTS
 
-### **Create Resource (Add Link)**
+### **Create Resource (Add Link or Upload File)**
 
 #### 15. **POST /api/v1/vaults/:vaultId/resources**
 - **Controller:** `resourceController.createResource()`
-- **Why:** Add a new link/resource to vault
-- **Request Body:** title, url
-- **Response:** Resource object with id, vaultId, createdBy, title, url, createdAt
+- **Why:** Add a new link or upload a file to vault
+- **Request Body:** 
+  - For links: title, url
+  - For files: title, file (multipart/form-data)
+- **Response:** Resource object with id, vaultId, createdBy, title, url (if link), files (array of file objects), createdAt
 - **Auth Required:** Yes (JWT)
-- **Note:** User must be Owner/Contributor of vault. createdBy = req.user.id
+- **Note:** User must be Owner/Contributor of vault. createdBy = req.user.id. Uses multer for file handling and Cloudinary for storage.
 
 ### **Get All Resources in Vault**
 
 #### 16. **GET /api/v1/vaults/:vaultId/resources**
 - **Controller:** `resourceController.getVaultResources()`
-- **Why:** Fetch all links/resources in a specific vault
+- **Why:** Fetch all links/resources and their associated files in a specific vault
 - **Request Body:** None
 - **Query Params:** Optional (limit, page, sortBy)
-- **Response:** Array of resource objects with creator info
+- **Response:** Array of resource objects with creator info, url (if link), files (array of file objects)
 - **Auth Required:** Yes (JWT)
 - **Note:** User must have access to vault
 
@@ -177,9 +179,9 @@ Backend will have:
 
 #### 17. **GET /api/v1/resources/:resourceId**
 - **Controller:** `resourceController.getResourceById()`
-- **Why:** Fetch specific resource details and its metadata
+- **Why:** Fetch specific resource details, its metadata, and associated files
 - **Request Body:** None
-- **Response:** Resource object with creator name, creation date
+- **Response:** Resource object with creator name, creation date, url (if link), files (array of file objects with fileName, filePath, uploadedAt)
 - **Auth Required:** Yes (JWT)
 - **Note:** User must have access to parent vault
 

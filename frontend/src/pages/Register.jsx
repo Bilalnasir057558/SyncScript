@@ -39,7 +39,7 @@ export default function Register() {
 
             const response = await registerUser(formData);
             console.log(response.data);
-            setStatusMessage(response.status === 200 ? 'User registered successfully' : 'Registration failed');
+            setStatusMessage(response.status === 200  ? 'User registered successfully' : 'Registration failed');
             if(response.status === 200) {
                 setFormData({
                     username: '',
@@ -48,7 +48,6 @@ export default function Register() {
                     password: ''
                 });
             }
-            setTimeout(() => navigate('/login'), 3000);
         } catch (error) {
             setStatusMessage(error.status === 409 ? 'User already exist' : error.message);
         } finally {

@@ -3,6 +3,9 @@ import {ApiError} from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import { Vault } from "../models/vault.model.js";
 import { VaultMember } from "../models/vaultMember.model.js";
+import { Resource } from "../models/resource.model.js";
+import { Annotation } from "../models/annotation.model.js";
+import { File } from "../models/file.model.js";
 
 const createVault = asyncHandler(async (req, res) => {
 
@@ -230,9 +233,55 @@ const updateVault = asyncHandler(async (req, res) => {
     );
 })
 
+const deleteVault = asyncHandler(async (req, res) => {
+
+    const userId = req.user._id;
+    const {vaultId} = req.params;
+
+    const vault = await Vault.findById(vaultId);
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found.');
+    }
+
+    // authorize user
+    const isCreator = vault.createdBy.toString() === userId;
+    if(!isCreator) {
+        throw new ApiError(403, "Only vault owner can delete vault.");
+    }
+
+    // Cascade delete
+    const resources = await Resource.find({vaultId});
+
+    // deleting annotations and files of each resource
+    for(const resource of resources) {
+        await Annotation.deleteMany({resourceId: resource._id});
+        await File.deleteMany({resourceId: resource._id});
+    }
+
+    // deleting all resources
+    await Resource.deleteMany({vaultId});
+
+    // deleting all vault memberships
+    await VaultMember.deleteMany({vaultId});
+
+    // finally, delete the vault
+    await Vault.deleteOne({ _id: vaultId });
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            {},
+            'Vault deleted successfully.'
+        )
+    );
+})
+
 export {
     createVault,
     getUserVaults,
     getVaultById,
-    updateVault
+    updateVault,
+    deleteVault
 }

@@ -31,18 +31,12 @@ const createVault = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Something went wrong while creating a vault.');
     }
 
-    // auto create vaultMember entry
-    const vaultMember = await VaultMember.create({
-        userId,
-        vaultId: vault._id,
-        role: 'Owner'
-    });
-
     if(!vaultMember) {
         throw new ApiError(500, 'Error creating vaultMember entry');
     }
 
-    return res.status(200)
+    return res
+    .status(200)
     .json(
         new ApiResponse(
             200,
@@ -53,6 +47,63 @@ const createVault = asyncHandler(async (req, res) => {
 
 })
 
+const getUserVaults = asyncHandler(async (req, res) => {
+
+    if(!req.user?._id) {
+        throw new ApiError(401, 'Unauthorized request.');
+    }
+
+    const userId = req.user._id;
+
+    // find vaults created by the user
+    const createdVaults = await Vault.find({ createdBy:  userId}).lean();
+
+    // find vault memberships where user is a member
+    const membershipRecords = await VaultMember.find({userId}).lean();
+
+    // extract vaultIds from memberships
+    const memberVaultIds = membershipRecords.map(record => record.vaultId);
+
+    // extract vault details for the membership vaults
+    const memberVaults = await Vault.find({
+        _id: { $in: memberVaultIds } // find vaults where ID is in this array
+    }).lean();
+
+    // combine both arrays with roles
+    const allVaults = [];
+    
+    // add created vaults with Owner role
+    createdVaults.forEach(vault => {
+        allVaults.push({
+            ...vault,
+            role: 'Owner'
+        })
+    })
+
+    // add member vaults with their specific role
+    memberVaults.forEach(vault => {
+        const membership = membershipRecords.find(
+            record => record.vaultId.toString() === vault._id.toString()
+        );
+        allVaults.push({
+            ...vault,
+            role: membership.role
+        })
+    });
+
+    // return formatted response
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            allVaults,
+            'Vaults fetched successfully'
+        )
+    );
+})
+
 export {
-    createVault
+    createVault,
+    getUserVaults
 }

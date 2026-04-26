@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-// for making 
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true // allows cookies to send in req
@@ -29,9 +28,10 @@ app.use(cookieParser());
 
 // Route import
 import userRouter from "./routes/user.routes.js";
+import vaultRouter from "./routes/vault.routes.js";
 
 // Route declaration -> it sends control to the user router. 
 app.use('/api/v1/users', userRouter);
-
+app.use('/api/v1/vaults', vaultRouter);
 
 export {app}

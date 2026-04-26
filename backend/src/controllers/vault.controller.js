@@ -180,7 +180,59 @@ const getVaultById = asyncHandler(async (req, res) => {
     );
 })
 
+const updateVault = asyncHandler(async (req, res) => {
+
+    if(!req.user?._id) {
+        throw new ApiError(401, 'Unauthorized request.');
+    }
+
+    // get userId, vaultId and updated details
+    const { vaultId } = req.params;
+    const userId = req.user._id;
+    const {name, description} = req.body;
+
+    // validate data
+    if(!name || !name.trim()) {
+        throw new ApiError(400, 'Vault name is required.');
+    }
+
+    // find vault
+    const vault = await Vault.findById(vaultId);
+
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found.');
+    }
+
+    // Authorize user => Only owner can update the vault
+    const isCreator = vault.createdBy.toString() === userId;
+
+    if(!isCreator) {
+        throw new ApiError(403, "Only vault owner can update vault.");
+    }
+    
+    // at this point -> user is owner; update fields
+    vault.name = name.trim();
+    if(description !== undefined || description.trim().length !== 0) {
+        vault.description = description.trim();
+    }
+    vault.updatedAt = new Date();
+
+    await vault.save();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            vault,
+            'Vault updated successfully.'
+        )
+    );
+})
+
 export {
     createVault,
-    getUserVaults
+    getUserVaults,
+    getVaultById,
+    updateVault
 }

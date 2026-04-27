@@ -7,6 +7,7 @@ import CreateVaultModal from './components/CreateVault';
 import { Routes, Route } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -18,7 +19,14 @@ function App() {
       <Route path='/' element={<LandingPage />} />
       <Route path='/login' element={<Login />} />
       <Route path='/register' element={<Register />} />
-      <Route path='/dashboard' element={<DashboardPage />} />
+      <Route 
+        path='/dashboard' 
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path='/create-vault' element={<CreateVaultModal />} />
       <Route path='/add-resource' element={<AddResourceForm />} />
       <Route path='/annotation' element={<ResourceDetail />} />

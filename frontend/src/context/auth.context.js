@@ -29,3 +29,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   )
 };
+
+// custom hook for getting data from the context
+export const useAuth = () => useContext(AuthContext);

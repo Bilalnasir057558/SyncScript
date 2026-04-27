@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { loginUser } from "../api/auth.api.js";
-import { useAuth } from "../context/auth.context.js";
+import { useAuth } from "../context/auth.context.jsx";
 
 export default function Login() {
   const { setUser } = useAuth(); // for setting user after login
@@ -49,7 +49,7 @@ export default function Login() {
         password: formData.password.trim()
       });
 
-      console.log("Login Success:", response.data);
+      console.log(response.data);
       setStatusMessage("Login successful");
       setUser(response.data);
       setTimeout(() => navigate('/dashboard'), 2000);

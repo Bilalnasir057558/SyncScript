@@ -3,8 +3,10 @@ import { useNavigate } from "react-router";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { loginUser } from "../api/auth.api.js";
+import { useAuth } from "../context/auth.context.js";
 
 export default function Login() {
+  const { setUser } = useAuth(); // for setting user after login
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -49,7 +51,7 @@ export default function Login() {
 
       console.log("Login Success:", response.data);
       setStatusMessage("Login successful");
-
+      setUser(response.data);
       setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err) {
       console.error(err);

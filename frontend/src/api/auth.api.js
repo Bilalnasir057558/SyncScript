@@ -8,4 +8,9 @@ export const registerUser = async (userData) => {
 export const loginUser = async (userData) => {
     const response = await axiosInstance.post('/users/login', userData);
     return response;
+};
+
+export const getCurrentUser = async () => {
+    const response = await axiosInstance.get('/users/me');
+    return response;
 }

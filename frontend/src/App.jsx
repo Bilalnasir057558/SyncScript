@@ -27,9 +27,27 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path='/create-vault' element={<CreateVaultModal />} />
-      <Route path='/add-resource' element={<AddResourceForm />} />
-      <Route path='/annotation' element={<ResourceDetail />} />
+      <Route 
+        path='/create-vault' 
+        element={
+          <ProtectedRoute>
+            <CreateVaultModal />
+          </ProtectedRoute>
+        }/>
+      <Route 
+        path='/add-resource' 
+        element={
+          <ProtectedRoute>
+            <AddResourceForm />
+          </ProtectedRoute>
+        }/>
+      <Route 
+        path='/annotation' 
+        element={
+          <ProtectedRoute>
+            <ResourceDetail />
+          </ProtectedRoute>
+        }/>
       
     </Routes>
 

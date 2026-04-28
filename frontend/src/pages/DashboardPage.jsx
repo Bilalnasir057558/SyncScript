@@ -33,7 +33,7 @@ export default function DashboardPage() {
           - ml-64 on desktop
           - pb-24 on mobile so content isn't hidden by the Bottom Nav
       */}
-      <main className="flex-grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
+      <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
         <header className="flex justify-between items-center mb-8">
            <h2 className="text-xl md:text-2xl font-bold text-[#0B3C5D]">{activeSection}</h2>
            {/* Hide "Create Vault" text on tiny screens to save space */}
@@ -63,7 +63,7 @@ export default function DashboardPage() {
         {/* Start New Vault Card */}
         <div
           onClick={() => setOpen(true)}
-          className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-[150px] cursor-pointer hover:bg-gray-100 transition"
+          className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-37 cursor-pointer hover:bg-gray-100 transition"
         >
           <div className="text-center text-gray-400">
             <p className="text-2xl">+</p>

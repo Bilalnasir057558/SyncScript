@@ -7,13 +7,13 @@ import { User } from "../models/user.model.js";
 
 const addMember = asyncHandler(async (req, res) => {
 
-    if(req.user?._id) {
+    if(!req.user?._id) {
         throw new ApiError(401, 'Unauthorized request.');
     }
 
     // get data
     const ownerId = req.user._id;
-    const vaultId = req.params;
+    const { vaultId } = req.params;
     const { username, role } = req.body;
 
     // validate data from the frontend
@@ -23,22 +23,39 @@ const addMember = asyncHandler(async (req, res) => {
         throw new ApiError(400, 'All fields are required.');
     }
 
+    if(!['contributor', 'viewer'].includes(role.toLowerCase())) {
+        throw new ApiError(400, 'Invalid role.');
+    }
+
     // check user exists or not
     const user = await User.findOne({
         username: username.toLowerCase()
-    });
+    }).lean();
 
     if(!user) {
         throw new ApiError(404, `User with username ${username} does not exist.`);
     }
 
     // check if vault exists or not
-    const vault = await Vault.findById(vaultId);
+    const vault = await Vault.findById({
+        _id: vaultId
+    }).lean();
 
     if(!vault) {
         throw new ApiError(404, 'Vault not found.');
     }
 
+    // check if member exists or not
+    const memberExist = await VaultMember.findOne({
+        userId: user._id,
+        vaultId,
+        role: role.charAt(0).toUpperCase() + role.slice(1)
+    })
+
+    if(memberExist) {
+        throw new ApiError(409, 'Member already exists.');
+    }
+    
     // check if user is an owner or not
     const isCreator = vault.createdBy.toString() === ownerId.toString();
 
@@ -46,7 +63,6 @@ const addMember = asyncHandler(async (req, res) => {
         throw new ApiError(409, 'Only vault owner can add members.');
     }
 
-    // at this point, user is owner
     // create membership with specific role
     const membership = await VaultMember.create({
         userId: user._id,

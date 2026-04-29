@@ -34,6 +34,7 @@ const createVault = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Something went wrong while creating a vault.');
     }
 
+    console.log(vault);
 
     return res
     .status(200)
@@ -44,6 +45,7 @@ const createVault = asyncHandler(async (req, res) => {
             'Vault created successfully.'
         )
     );
+
 
 })
 

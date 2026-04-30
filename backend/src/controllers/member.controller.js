@@ -65,7 +65,7 @@ const addMember = asyncHandler(async (req, res) => {
   const isCreator = vault.createdBy.toString() === ownerId.toString();
 
   if (!isCreator) {
-    throw new ApiError(409, "Only vault owner can add members.");
+    throw new ApiError(403, "Only vault owner can add members.");
   }
 
   // create membership with specific role
@@ -121,14 +121,14 @@ const getVaultMembers = asyncHandler(async (req, res) => {
   }).lean();
 
   if (!isCreator && !isMember) {
-    throw new ApiError(409, "Only vault members can view member list.");
+    throw new ApiError(403, "Only vault members can view member list.");
   }
 
   // fetch members of the vault
   const members = await VaultMember.find({ vaultId })
     .populate("userId", "username email")
     .lean();
-
+    
   // combine owner and members in a single list
   const allMembers = [
     // owner as first item
@@ -166,6 +166,11 @@ const updateMemberRole = asyncHandler(async (req, res) => {
   const {vaultId, memberId} = req.params;
   const {role} = req.body;
 
+  // check if role exist or not
+  if(!role || (typeof role === "string" && !role.trim())) {
+    throw new ApiError(400, 'Role is required.');
+  }
+
   // validate role
   if(!['contributor', 'viewer'].includes(role.toLowerCase())) {
     throw new ApiError(401, 'Invalid role. Must be Contributor or Viewer.');
@@ -193,7 +198,7 @@ const updateMemberRole = asyncHandler(async (req, res) => {
   // only owner can change the role
   const isCreator = vault.createdBy.toString() === userId.toString();
   if(!isCreator) {
-    throw new ApiError(409, "Only owner can update the member's role");
+    throw new ApiError(403, "Only owner can update the member's role");
   }
 
   // update the role
@@ -255,7 +260,7 @@ const removeMember = asyncHandler(async (req, res) => {
   // only owner can remove the member
   const isCreator = vault.createdBy.toString() === userId.toString();
   if(!isCreator) {
-    throw new ApiError(409, "Only owner can update the member's role");
+    throw new ApiError(403, "Only owner can update the member's role");
   }
 
   // delete db document

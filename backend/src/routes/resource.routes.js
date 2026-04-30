@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createResource } from "../controllers/resource.controller.js";
+import { createResource, getVaultResources } from "../controllers/resource.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -9,6 +9,8 @@ const router = Router();
 // verifyJWT: ensures user is logged in
 // upload.single("file"): uses multer to catch the file upload
 
-router.route("/:vaultId").post(verifyJWT, upload.single("file"), createResource);
+router.route("/:vaultId")
+.post(verifyJWT, upload.single("file"), createResource)
+.get(verifyJWT, getVaultResources);
 
 export default router;

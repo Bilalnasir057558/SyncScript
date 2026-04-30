@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-// import SideMenu from '../components/Sidemenu';
-// import Header from '../components/Header';
+import SideMenu from '../components/Sidemenu';
+import Header from "../components/HeaderNavbar";
 import AnnotationCard from "../components/AnnotationCard";
 import Icon from "../components/Icon";
 import Button from "../components/Button";
@@ -38,10 +38,10 @@ export default function ResourceDetail() {
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
-      {/* <SideMenu activeItem="My Vaults" /> */}
+      <SideMenu activeItem="My Vaults" />
 
       <div className="flex-grow flex flex-col">
-        {/* <Header /> */}
+        <Header />
 
         <main className="mt-16 ml-0 md:ml-64 p-8 md:p-12">
           {/* Title and Header Actions */}

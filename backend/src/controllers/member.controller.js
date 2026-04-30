@@ -224,4 +224,55 @@ const updateMemberRole = asyncHandler(async (req, res) => {
   );
 }) 
 
-export { addMember, getVaultMembers, updateMemberRole };
+const removeMember = asyncHandler(async (req, res) => {
+    if(!req.user?._id) {
+    throw new ApiError(401, 'Unauthorized request.');
+  }
+
+  // get data
+  const userId = req.user._id;
+  const {vaultId, memberId} = req.params;
+
+  // validate member
+  const membership = await VaultMember.findOne({
+    userId: memberId,
+    vaultId
+  });
+
+  if(!membership) {
+    throw new ApiError(401, 'Invalid memberId.');
+  }
+
+  // validate vault
+  const vault = await Vault.findById({
+    _id: vaultId
+  }).lean();
+
+  if(!vault) {
+    throw new ApiError(404, 'Vault not found.');
+  }
+
+  // only owner can remove the member
+  const isCreator = vault.createdBy.toString() === userId.toString();
+  if(!isCreator) {
+    throw new ApiError(409, "Only owner can update the member's role");
+  }
+
+  // delete db document
+  await VaultMember.findOneAndDelete({
+    userId: memberId,
+    vaultId
+  }).lean();
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      {},
+      'Member removed successfully'
+    )
+  );
+})
+
+export { addMember, getVaultMembers, updateMemberRole, removeMember };

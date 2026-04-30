@@ -30,10 +30,13 @@ app.use(cookieParser());
 import userRouter from "./routes/user.routes.js";
 import vaultRouter from "./routes/vault.routes.js";
 import annotationRouter from "./routes/annotation.routes.js";
+import resourceRouter from "./routes/resource.routes.js";
 
 // Route declaration -> it sends control to the user router. 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/vaults', vaultRouter);
-app.use('/api/v1/annotations', annotationRouter);
+app.use('/api/v1/resources', resourceRouter); // for resource creation
+app.use('/api/v1', annotationRouter); // for annotations
+
 
 export {app}

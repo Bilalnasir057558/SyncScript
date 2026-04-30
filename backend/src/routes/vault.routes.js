@@ -1,4 +1,5 @@
-import Router from "express";
+// import Router from "express";
+import { Router } from "express";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 import { createVault, deleteVault, getUserVaults, getVaultById, updateVault } from "../controllers/vault.controller.js";
 

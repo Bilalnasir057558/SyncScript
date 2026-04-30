@@ -1,7 +1,7 @@
 import Router from "express";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
 import { createVault, deleteVault, getUserVaults, getVaultById, updateVault } from "../controllers/vault.controller.js";
-import { addMember, getVaultMembers } from "../controllers/member.controller.js";
+import { addMember, getVaultMembers, updateMemberRole } from "../controllers/member.controller.js";
 
 const router = Router();
 
@@ -40,6 +40,11 @@ router.route('/:vaultId/members').post(
 router.route('/:vaultId/members').get(
     verifyJWT,
     getVaultMembers
+)
+
+router.route('/:vaultId/members/:memberId').patch(
+    verifyJWT,
+    updateMemberRole
 )
 
 

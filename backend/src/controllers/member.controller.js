@@ -37,9 +37,6 @@ const addMember = asyncHandler(async (req, res) => {
     throw new ApiError(404, `User with username ${username} does not exist.`);
   }
 
-  console.log(ownerId);
-  console.log(user._id);
-
   // can't add yourself
   if (ownerId.toString() === user._id.toString()) {
     throw new ApiError(400, "You cannot add yourself as a member.");
@@ -58,7 +55,6 @@ const addMember = asyncHandler(async (req, res) => {
   const memberExist = await VaultMember.findOne({
     userId: user._id,
     vaultId,
-    role: role.charAt(0).toUpperCase() + role.slice(1),
   });
 
   if (memberExist) {
@@ -159,4 +155,73 @@ const getVaultMembers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, allMembers, "Members fetched successfully."));
 });
 
-export { addMember, getVaultMembers };
+const updateMemberRole = asyncHandler(async (req, res) => {
+
+  if(!req.user?._id) {
+    throw new ApiError(401, 'Unauthorized request.');
+  }
+
+  // get data
+  const userId = req.user._id;
+  const {vaultId, memberId} = req.params;
+  const {role} = req.body;
+
+  // validate role
+  if(!['contributor', 'viewer'].includes(role.toLowerCase())) {
+    throw new ApiError(401, 'Invalid role. Must be Contributor or Viewer.');
+  }
+
+  // validate member
+  const membership = await VaultMember.findOne({
+    userId: memberId,
+    vaultId
+  });
+
+  if(!membership) {
+    throw new ApiError(401, 'Invalid memberId.');
+  }
+
+  // validate vault
+  const vault = await Vault.findById({
+    _id: vaultId
+  }).lean();
+
+  if(!vault) {
+    throw new ApiError(404, 'Vault not found.');
+  }
+
+  // only owner can change the role
+  const isCreator = vault.createdBy.toString() === userId.toString();
+  if(!isCreator) {
+    throw new ApiError(409, "Only owner can update the member's role");
+  }
+
+  // update the role
+  membership.role = role.charAt(0).toUpperCase() + role.slice(1);
+
+  await membership.save();
+
+  // get details of member from the User db
+  await membership.populate('userId', 'username email');
+
+  const responseData = {
+    id: membership._id,
+    userId: membership.userId._id,
+    username: membership.userId.username,
+    email: membership.userId.email,
+    role: membership.role,
+    addedAt: membership.addedAt
+  };
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200, 
+      responseData,
+      'Member role updated successfully.'
+    )
+  );
+}) 
+
+export { addMember, getVaultMembers, updateMemberRole };

@@ -7,18 +7,19 @@ import { Vault } from "../models/vault.model.js";
 import { VaultMember } from "../models/vaultMember.model.js";
 
 
-const checkVaultAccess = async (userId, vaultId) => {
+// Helper: Check vault access
+const checkAccess = async (userId, vaultId) => {
   const isOwner = await Vault.findOne({
     _id: vaultId,
     createdBy: userId,
   });
 
-  const membership = await VaultMember.findOne({
+  const member = await VaultMember.findOne({
     vaultId,
     userId,
   });
 
-  return { isOwner, membership };
+  return { isOwner, member };
 };
 
 
@@ -36,17 +37,14 @@ const createAnnotation = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Resource not found.");
   }
 
-  //RBAC CHECK
-  const { isOwner, membership } = await checkVaultAccess(
+  // RBAC
+  const { isOwner, member } = await checkAccess(
     req.user._id,
     resource.vaultId
   );
 
-  if (!isOwner && (!membership || membership.role === "Viewer")) {
-    throw new ApiError(
-      403,
-      "You do not have permission to create annotations."
-    );
+  if (!isOwner && (!member || member.role === "Viewer")) {
+    throw new ApiError(403, "No permission to create annotation.");
   }
 
   const annotation = await Annotation.create({
@@ -55,10 +53,11 @@ const createAnnotation = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   });
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, annotation, "Annotation created successfully"));
+  return res.status(201).json(
+    new ApiResponse(201, annotation, "Annotation created successfully")
+  );
 });
+
 
 // 2. GET ALL ANNOTATIONS
 const getResourceAnnotations = asyncHandler(async (req, res) => {
@@ -69,13 +68,13 @@ const getResourceAnnotations = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Resource not found.");
   }
 
-  // RBAC CHECK (Viewer allowed)
-  const { isOwner, membership } = await checkVaultAccess(
+  // RBAC (Viewer allowed)
+  const { isOwner, member } = await checkAccess(
     req.user._id,
     resource.vaultId
   );
 
-  if (!isOwner && !membership) {
+  if (!isOwner && !member) {
     throw new ApiError(403, "Access denied.");
   }
 
@@ -83,19 +82,29 @@ const getResourceAnnotations = asyncHandler(async (req, res) => {
     .populate("createdBy", "username email")
     .sort({ createdAt: -1 });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, annotations, "Annotations fetched successfully"));
+  // Flatten response
+  const formatted = annotations.map((a) => ({
+    id: a._id,
+    content: a.content,
+    resourceId: a.resourceId,
+    createdAt: a.createdAt,
+    userId: a.createdBy._id,
+    username: a.createdBy.username,
+    email: a.createdBy.email,
+  }));
+
+  return res.status(200).json(
+    new ApiResponse(200, formatted, "Annotations fetched successfully")
+  );
 });
+
 
 // 3. GET SINGLE ANNOTATION
 const getAnnotationById = asyncHandler(async (req, res) => {
   const { annotationId } = req.params;
 
-  const annotation = await Annotation.findById(annotationId).populate(
-    "createdBy",
-    "username email"
-  );
+  const annotation = await Annotation.findById(annotationId)
+    .populate("createdBy", "username email");
 
   if (!annotation) {
     throw new ApiError(404, "Annotation not found.");
@@ -103,18 +112,30 @@ const getAnnotationById = asyncHandler(async (req, res) => {
 
   const resource = await Resource.findById(annotation.resourceId);
 
-  const { isOwner, membership } = await checkVaultAccess(
+  // RBAC
+  const { isOwner, member } = await checkAccess(
     req.user._id,
     resource.vaultId
   );
 
-  if (!isOwner && !membership) {
+  if (!isOwner && !member) {
     throw new ApiError(403, "Access denied.");
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, annotation, "Annotation fetched successfully"));
+  // Flatten response
+  const formatted = {
+    id: annotation._id,
+    content: annotation.content,
+    resourceId: annotation.resourceId,
+    createdAt: annotation.createdAt,
+    userId: annotation.createdBy._id,
+    username: annotation.createdBy.username,
+    email: annotation.createdBy.email,
+  };
+
+  return res.status(200).json(
+    new ApiResponse(200, formatted, "Annotation fetched successfully")
+  );
 });
 
 
@@ -131,17 +152,14 @@ const updateAnnotation = asyncHandler(async (req, res) => {
 
   const resource = await Resource.findById(annotation.resourceId);
 
-  const { isOwner, membership } = await checkVaultAccess(
+  // RBAC
+  const { isOwner, member } = await checkAccess(
     req.user._id,
     resource.vaultId
   );
 
-  // RBAC (Viewer cannot update)
-  if (!isOwner && (!membership || membership.role === "Viewer")) {
-    throw new ApiError(
-      403,
-      "You do not have permission to update annotations."
-    );
+  if (!isOwner && (!member || member.role === "Viewer")) {
+    throw new ApiError(403, "No permission to update annotation.");
   }
 
   // Creator check
@@ -152,10 +170,11 @@ const updateAnnotation = asyncHandler(async (req, res) => {
   annotation.content = content;
   await annotation.save();
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, annotation, "Annotation updated successfully"));
+  return res.status(200).json(
+    new ApiResponse(200, annotation, "Annotation updated successfully")
+  );
 });
+
 
 // 5. DELETE ANNOTATION
 const deleteAnnotation = asyncHandler(async (req, res) => {
@@ -169,17 +188,14 @@ const deleteAnnotation = asyncHandler(async (req, res) => {
 
   const resource = await Resource.findById(annotation.resourceId);
 
-  const { isOwner, membership } = await checkVaultAccess(
+  // RBAC
+  const { isOwner, member } = await checkAccess(
     req.user._id,
     resource.vaultId
   );
 
-  // RBAC
-  if (!isOwner && (!membership || membership.role === "Viewer")) {
-    throw new ApiError(
-      403,
-      "You do not have permission to delete annotations."
-    );
+  if (!isOwner && (!member || member.role === "Viewer")) {
+    throw new ApiError(403, "No permission to delete annotation.");
   }
 
   if (annotation.createdBy.toString() !== req.user._id.toString()) {
@@ -188,9 +204,9 @@ const deleteAnnotation = asyncHandler(async (req, res) => {
 
   await Annotation.deleteOne({ _id: annotationId });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Annotation deleted successfully"));
+  return res.status(200).json(
+    new ApiResponse(200, {}, "Annotation deleted successfully")
+  );
 });
 
 

@@ -128,6 +128,10 @@ const getVaultMembers = asyncHandler(async (req, res) => {
   const members = await VaultMember.find({ vaultId })
     .populate("userId", "username email")
     .lean();
+  
+  if(members.length === 0) {
+
+  }
     
   // combine owner and members in a single list
   const allMembers = [
@@ -183,7 +187,7 @@ const updateMemberRole = asyncHandler(async (req, res) => {
   });
 
   if(!membership) {
-    throw new ApiError(401, 'Invalid memberId.');
+    throw new ApiError(404, 'Member not found in the database.');
   }
 
   // validate vault
@@ -227,7 +231,7 @@ const updateMemberRole = asyncHandler(async (req, res) => {
       'Member role updated successfully.'
     )
   );
-}) 
+});
 
 const removeMember = asyncHandler(async (req, res) => {
     if(!req.user?._id) {
@@ -245,7 +249,7 @@ const removeMember = asyncHandler(async (req, res) => {
   });
 
   if(!membership) {
-    throw new ApiError(401, 'Invalid memberId.');
+    throw new ApiError(404, 'Member not found in the database.');
   }
 
   // validate vault
@@ -260,7 +264,7 @@ const removeMember = asyncHandler(async (req, res) => {
   // only owner can remove the member
   const isCreator = vault.createdBy.toString() === userId.toString();
   if(!isCreator) {
-    throw new ApiError(403, "Only owner can update the member's role");
+    throw new ApiError(403, "Only owner can remove a member.");
   }
 
   // delete db document
@@ -278,6 +282,6 @@ const removeMember = asyncHandler(async (req, res) => {
       'Member removed successfully'
     )
   );
-})
+});
 
 export { addMember, getVaultMembers, updateMemberRole, removeMember };

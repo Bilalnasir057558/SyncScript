@@ -130,7 +130,7 @@ const getVaultMembers = asyncHandler(async (req, res) => {
     .lean();
   
   if(members.length === 0) {
-
+    throw new ApiError(404, 'No members found in this vault.');
   }
     
   // combine owner and members in a single list

@@ -128,11 +128,7 @@ const getVaultMembers = asyncHandler(async (req, res) => {
   const members = await VaultMember.find({ vaultId })
     .populate("userId", "username email")
     .lean();
-  
-  if(members.length === 0) {
-    throw new ApiError(404, 'No members found in this vault.');
-  }
-    
+
   // combine owner and members in a single list
   const allMembers = [
     // owner as first item

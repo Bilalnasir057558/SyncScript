@@ -51,7 +51,7 @@ function App() {
         }
       />
       <Route 
-        path='/annotation' 
+        path='/resource/:resourceId' 
         element={
           <ProtectedRoute>
             <ResourceDetail />

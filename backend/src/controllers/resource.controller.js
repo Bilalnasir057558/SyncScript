@@ -139,3 +139,39 @@ const getResourceById = asyncHandler(async (req, res) => {
 });
 
 export { getResourceById };
+
+const updateResource = asyncHandler(async (req, res) => {
+    const { resourceId } = req.params;
+    const { title, url } = req.body;
+
+    // 1. Find the resource
+    const resource = await Resource.findById(resourceId);
+    if (!resource) {
+        throw new ApiError(404, "Resource not found.");
+    }
+
+    // 2. Authorization Check
+    // Check if user is the Creator
+    const isCreator = resource.createdBy.toString() === req.user._id.toString();
+
+    // Check if user is the Vault Owner
+    const vault = await Vault.findById(resource.vaultId);
+    const isVaultOwner = vault?.createdBy.toString() === req.user._id.toString();
+
+    if (!isCreator && !isVaultOwner) {
+        throw new ApiError(403, "Access denied. Only the creator or vault owner can edit this.");
+    }
+
+    // 3. Perform the update
+    // We only update if the field is actually provided in the body
+    if (title) resource.title = title;
+    if (url) resource.url = url;
+
+    await resource.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, resource, "Resource updated successfully.")
+    );
+});
+
+export { updateResource };

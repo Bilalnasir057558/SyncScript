@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createResource, getResourceById, getVaultResources } from "../controllers/resource.controller.js";
+import { createResource, getResourceById, getVaultResources, updateResource } from "../controllers/resource.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -15,6 +15,6 @@ router.route("/:vaultId")
 
 //New route for single resource details
 router.route("/detail/:resourceId")
-.get(verifyJWT, getResourceById);
-
+.get(verifyJWT, getResourceById)
+.put(verifyJWT, updateResource);
 export default router;

@@ -16,6 +16,10 @@ export default function ResourceDetail() {
   const [annotations, setAnnotations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+
   const editorRef = useRef(null);
   const [noteText, setNoteText] = useState("");
   const textareaRef = useRef(null);
@@ -27,7 +31,10 @@ export default function ResourceDetail() {
         setLoading(true);
         // Endpoint #17: Fetch resource metadata
         const response = await axiosInstance.get(`/resources/detail/${resourceId}`);
-        setResource(response.data.data);
+        const data = response.data.data;
+        setResource(data);
+        setEditTitle(data.title);
+        setEditUrl(data.url || "");
         
         // TODO: Once annotations endpoint #21 is ready, fetch them here:
         // const annRes = await axiosInstance.get(`/resources/${resourceId}/annotations`);
@@ -70,6 +77,20 @@ export default function ResourceDetail() {
   // 3. Loading and Error Guards
   if (loading) return <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">Unlocking research data...</div>;
   if (!resource) return <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">Resource not found.</div>;
+
+  const handleUpdate = async () => {
+  try {
+    const response = await axiosInstance.put(`/resources/detail/${resourceId}`, {
+      title: editTitle,
+      url: editUrl
+    });
+    setResource(response.data.data);
+    setIsEditing(false);
+    alert("Archival data updated.");
+  } catch (err) {
+    alert(err.response?.data?.message || "Update failed.");
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">

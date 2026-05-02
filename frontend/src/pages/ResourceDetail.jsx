@@ -1,10 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, {useEffect , useState, useRef } from "react";
 // import SideMenu from '../components/Sidemenu';
 // import Header from '../components/Header';
 import AnnotationCard from "../components/AnnotationCard";
 import Icon from "../components/Icon";
 import Button from "../components/Button";
 import { Editor } from "@tinymce/tinymce-react";
+import axios from "axios";
 
 export default function ResourceDetail() {
   // Placeholder state for future backend integration

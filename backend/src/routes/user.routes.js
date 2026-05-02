@@ -1,4 +1,5 @@
-import Router from "express";
+// import Router from "express";
+import { Router } from "express";
 import { getCurrentUser, loginUser, logoutUser, refreshAccessToken, registerUser } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 

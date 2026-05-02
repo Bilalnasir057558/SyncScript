@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateVaultModal from "../components/CreateVault";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
@@ -6,6 +6,7 @@ import SideMenu from "../components/Sidemenu";
 import MobileNav from "../components/MobileNav";
 import VaultCard from "../components/VaultCard";
 import { createVault } from "../api/vault.api";
+import axiosInstance from "../api/axios";
 
 export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState('My Vaults');
@@ -20,10 +21,10 @@ export default function DashboardPage() {
 
     const tempVault = {
       id: tempId,
-      title: data.name,
+      name: data.name,
       description: data.description,
       resources: 0,
-      date: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString().split('T')[0],
       status: "saving"
     };
 
@@ -32,11 +33,13 @@ export default function DashboardPage() {
 
     try {
       const res = await createVault({
-        title: data.name,
+        name: data.name,
         description: data.description
       });
 
+
       const savedVault = res.data;
+      console.log(res.data);
 
       // replace temp vault with real vault
       setVaults(prev => 
@@ -52,6 +55,15 @@ export default function DashboardPage() {
       alert('Failed to save vault');
     }
   };
+
+  // get vaults when app loads
+  useEffect(() => {
+    async function getVault() {
+      const res = await axiosInstance.get('/vaults');
+      await setVaults(res.data.data);
+    }
+    getVault();
+  }, [])
 
   return (
     <div className="flex min-h-screen bg-white">

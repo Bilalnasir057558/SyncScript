@@ -11,16 +11,29 @@ export default function DashboardPage() {
   const [open, setOpen] = useState(false);
   const [vaults, setVaults] = useState([]);
 
-  // Add new vault (frontend only)
-  const handleCreateVault = (data) => {
-    const newVault = {
+  // Add new vault
+  const handleCreateVault = async (data) => {
+
+    // create temporary vault (optimistic UI)
+    const tempId = `temp-${Date.now()}`;
+
+    const tempVault = {
+      id: tempId,
       title: data.name,
       description: data.description,
       resources: 0,
-      date: "Just now",
+      date: new Date().toISOString().split('T')[0],
     };
 
-    setVaults((prev) => [newVault, ...prev]);
+    // update UI immediately using optimistic vault
+    setVaults((prev) => [tempVault, ...prev]);
+
+    try {
+      
+    } catch (error) {
+      console.log(error);
+
+    }
   };
 
   return (

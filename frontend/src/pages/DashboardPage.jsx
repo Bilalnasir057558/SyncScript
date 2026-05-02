@@ -5,6 +5,7 @@ import Icon from "../components/Icon";
 import SideMenu from "../components/Sidemenu";
 import MobileNav from "../components/MobileNav";
 import VaultCard from "../components/VaultCard";
+import { createVault } from "../api/vault.api";
 
 export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState('My Vaults');
@@ -23,16 +24,32 @@ export default function DashboardPage() {
       description: data.description,
       resources: 0,
       date: new Date().toISOString().split('T')[0],
+      status: "saving"
     };
 
     // update UI immediately using optimistic vault
     setVaults((prev) => [tempVault, ...prev]);
 
     try {
-      
+      const res = await createVault({
+        title: data.name,
+        description: data.description
+      });
+
+      const savedVault = res.data;
+
+      // replace temp vault with real vault
+      setVaults(prev => 
+        prev.map(vault => 
+          vault.id === tempId ? {...savedVault, status: "saved"} : vault
+        )
+      );
     } catch (error) {
       console.log(error);
 
+      // Rollback if api fails
+      setVaults(prev => prev.filter(vault => vault.id !== tempId));
+      alert('Failed to save vault');
     }
   };
 

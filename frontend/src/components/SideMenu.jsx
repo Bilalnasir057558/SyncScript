@@ -5,7 +5,6 @@ import Button from './Button';
 export default function SideMenu({activeItem, setActiveItem}) {
 
 const menuItems = [
-  { name: 'Dashboard', iconName: 'dashboard'},
   { name: 'My Vaults', iconName: 'vault'},
   { name: 'Shared Vaults', iconName: 'user'},
   { name: 'Profile', iconName: 'security'},

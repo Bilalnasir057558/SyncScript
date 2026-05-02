@@ -3,7 +3,6 @@ import Icon from './Icon';
 
 export default function MobileNav({ activeItem, setActiveItem }) {
   const menuItems = [
-    { name: 'Dashboard', id: 'dashboard' },
     { name: 'Vaults', id: 'vault' }, // Shortened for mobile space
     { name: 'Shared', id: 'user' },
     { name: 'Profile', id: 'security' },

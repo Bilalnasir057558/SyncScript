@@ -7,6 +7,7 @@ import MobileNav from "../components/MobileNav";
 import VaultCard from "../components/VaultCard";
 import { createVault } from "../api/vault.api";
 import axiosInstance from "../api/axios";
+import { Link } from "react-router";
 
 export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState("My Vaults");
@@ -110,7 +111,9 @@ export default function DashboardPage() {
           {/* Dynamic Vaults */}
           {displayVaults.length > 0 ? (
             displayVaults.map((vault) => (
-              <VaultCard key={vault._id} {...vault} />
+              <Link key={vault._id} to={`/vaults/${vault._id}`}>
+                    <VaultCard {...vault} />
+              </Link>
             ))
           ) : (
             <p className="text-gray-400 col-span-3 text-center">

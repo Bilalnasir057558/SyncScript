@@ -8,6 +8,7 @@ import { Routes, Route } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import VaultDetail from './pages/VaultDetail';
 
 function App() {
   return (
@@ -27,6 +28,13 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route 
+        path='/vaults/:vaultId'
+        element={
+          <ProtectedRoute>
+            <VaultDetail />
+          </ProtectedRoute>
+        }/>
       <Route 
         path='/create-vault' 
         element={

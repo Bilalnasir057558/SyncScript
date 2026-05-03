@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from './Icon';
+import { useNavigate } from 'react-router';
 
 export default function MobileNav({ activeItem, setActiveItem }) {
   const menuItems = [
@@ -7,6 +8,8 @@ export default function MobileNav({ activeItem, setActiveItem }) {
     { name: 'Shared', id: 'user' },
     { name: 'Profile', id: 'security' },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 px-6 py-3 flex justify-between items-center z-50 md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
@@ -30,7 +33,7 @@ export default function MobileNav({ activeItem, setActiveItem }) {
       })}
       
       {/* Floating Action Button for Mobile */}
-      <button className="bg-[#0B3C5D] text-white p-4 rounded-full -mt-12 shadow-lg border-4 border-white active:scale-95 transition-transform">
+      <button onClick={() => navigate('/add-resource')} className="bg-[#0B3C5D] text-white p-4 rounded-full -mt-12 shadow-lg border-4 border-white active:scale-95 transition-transform">
         <Icon name="add" size="20px" color="white" />
       </button>
     </nav>

@@ -41,7 +41,7 @@ export default function ResourceDetail() {
     <div className="flex min-h-screen bg-[#F7F9FC]">
       {/* <SideMenu activeItem="My Vaults" /> */}
 
-      <div className="flex-grow flex flex-col">
+      <div className="grow flex flex-col">
         {/* <Header /> */}
 
         <main className="mt-16 ml-0 md:ml-64 p-8 md:p-12">
@@ -146,7 +146,7 @@ export default function ResourceDetail() {
             {/* Right Column: Insight Sidebar (4/12) */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
               <div className="h-40 bg-[url('/src/assets/insight-bg.png')] bg-cover bg-center flex items-end p-6 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
                 <h3 className="relative text-white font-bold text-lg">
                   Resource Insight
                 </h3>

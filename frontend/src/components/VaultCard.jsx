@@ -2,6 +2,7 @@ export default function VaultCard({
   name,
   description,
   createdAt,
+  role,
   resources = 0,
 }) {
   const getRelativeTime = (dateString) => {
@@ -36,7 +37,7 @@ export default function VaultCard({
           </div>
 
           <span className="text-[10px] px-2 py-1 rounded-md bg-gray-100 text-gray-500 font-semibold">
-            ACTIVE
+            {role}
           </span>
         </div>
 

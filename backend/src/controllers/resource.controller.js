@@ -29,7 +29,6 @@ const createResource = asyncHandler(async (req, res) => {
         if (!member) {
             throw new ApiError(403, "Access denied. You cannot add resources to this vault.");
         }
-        throw new ApiError(403, "Access denied. You cannot add resources to this vault.");
     }
 
     // 2. Create the Resource entry first
@@ -73,3 +72,106 @@ const createResource = asyncHandler(async (req, res) => {
 });
 
 export { createResource };
+
+const getVaultResources = asyncHandler(async (req, res) => {
+    const { vaultId } = req.params;
+
+    // 1. Check if the user is the vault owner or a member of the vault
+    const vault = await Vault.findOne({
+        _id: vaultId,
+        createdBy: req.user._id
+    });
+
+    let isAuthorized = !!vault; // User is authorized if they're the creator
+
+    if (!isAuthorized) {
+        // If not the owner, check if they're a member (Contributor or Viewer)
+        const member = await VaultMember.findOne({
+            vaultId,
+            userId: req.user._id
+        });
+        isAuthorized = !!member;
+    }
+
+    if (!isAuthorized) {
+        throw new ApiError(403, "You do not have permission to view this vault's resources");
+    }
+
+    // 2. Fetch resources and "Populate" the related data
+    const resources = await Resource.find({ vaultId })
+        .populate("createdBy", "username fullName email") // Get creator details from User model
+        .populate("file") // Swap file IDs for actual File documents
+        .sort({ createdAt: -1 }); // Show newest first
+
+    return res.status(200).json(
+        new ApiResponse(200, resources, "Resources retrieved successfully")
+    );
+});
+
+export { getVaultResources };
+
+const getResourceById = asyncHandler(async (req, res) => {
+    const { resourceId } = req.params;
+
+    // 1. Find the resource first to get its vaultId
+    const resource = await Resource.findById(resourceId)
+        .populate("createdBy", "fullName username") // Get creator info
+        .populate("file"); // Get associated file details
+
+    if (!resource) {
+        throw new ApiError(404, "Resource not found in the sanctuary.");
+    }
+
+    // 2. Authorization: Check if user has access to the parent vault
+    const membership = await VaultMember.findOne({
+        vaultId: resource.vaultId,
+        userId: req.user._id
+    });
+
+    if (!membership) {
+        throw new ApiError(403, "You do not have permission to view this resource.");
+    }
+
+    // 3. Format the response as per Bilal's requirement
+    return res.status(200).json(
+        new ApiResponse(200, resource, "Resource details retrieved successfully")
+    );
+});
+
+export { getResourceById };
+
+const updateResource = asyncHandler(async (req, res) => {
+    const { resourceId } = req.params;
+    const { title, url } = req.body;
+
+    // 1. Find the resource
+    const resource = await Resource.findById(resourceId);
+    if (!resource) {
+        throw new ApiError(404, "Resource not found.");
+    }
+
+    // 2. Authorization Check
+    // Check if user is the Creator
+    const isCreator = resource.createdBy.toString() === req.user._id.toString();
+
+    // Check if user is the Vault Owner
+    const vault = await Vault.findById(resource.vaultId);
+    const isVaultOwner = vault?.createdBy.toString() === req.user._id.toString();
+
+    if (!isCreator && !isVaultOwner) {
+        throw new ApiError(403, "Access denied. Only the creator or vault owner can edit this.");
+    }
+
+    // 3. Perform the update
+    // We only update if the field is actually provided in the body
+    if (title) resource.title = title;
+    if (url) resource.url = url;
+
+    await resource.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, resource, "Resource updated successfully.")
+    );
+});
+
+export { updateResource };

@@ -112,7 +112,7 @@ const getVaultById = asyncHandler(async (req, res) => {
     }
 
     // get vaultId and userId
-    const userId = req.user.id
+    const userId = req.user._id;
     const {vaultId} = req.params;
 
     // get vault from the db
@@ -123,13 +123,13 @@ const getVaultById = asyncHandler(async (req, res) => {
     }
 
     // check if the user is authorized or not (owner or member can access)
-    const isCreator = vault.createdBy.toString() === userId;
+    const isCreator = vault.createdBy.toString() === userId.toString();
     const membership = await VaultMember.find({
         userId,
         vaultId
     }).lean();
 
-    if(!isCreator || !membership) {
+    if(!isCreator && !membership) { //Used || (OR) which rejected if user was NOT creator OR NOT a member. Should be && (AND).
         throw new ApiError(403, "You don't have access to this vault.");
     }
 

@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import AddResourceForm from './components/AddResourceForm';
 import ResourceDetail from './pages/ResourceDetail';
 import CreateVaultModal from './components/CreateVault';
+import VaultDetail from './pages/VaultDetail';
 import { Routes, Route } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
@@ -49,8 +50,16 @@ function App() {
             <AddResourceForm />
           </ProtectedRoute>
         }/>
+      <Route
+        path='/vault/:vaultId'
+        element={
+          <ProtectedRoute>
+            <VaultDetail />
+          </ProtectedRoute>
+        }
+      />
       <Route 
-        path='/annotation' 
+        path='/resource/:resourceId' 
         element={
           <ProtectedRoute>
             <ResourceDetail />

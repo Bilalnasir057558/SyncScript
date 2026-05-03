@@ -2,18 +2,15 @@ import { useRef, useState } from "react";
 import Input from "./Input";
 import Icon from "./Icon";
 import Button from "./Button";
+import axiosInstance from "../api/axios";
 
-export default function AddResourceForm() {
+export default function AddResourceForm({ vaultId, onResourceAdded, onClose }) {
   const fileInputRef = useRef(null);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [fileSelected, setFileSelected] = useState(null);
-  const [isOpen, setIsOpen] = useState(true);
   const [error, setError] = useState("");
-
-  const onClose = () => {
-    setIsOpen(false);
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleClick = () => {
     fileInputRef.current.click();
@@ -24,40 +21,60 @@ export default function AddResourceForm() {
     setFileSelected(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if(!title.trim()) {
       setError("Title is required")
       return;
-    };
+    }
     if(!url.trim()) {
       setError("URL is required");
       return;
     }
 
-    const newResource = {
-      resourceTitle: title,
-      resourceURL: url,
-      file: fileSelected?.name
-    };
-
-    console.log(newResource);
-    alert("Resource is added!");
-    clearFields();
+    setLoading(true);
     setError("");
 
-  }
+    try {
+      // 1. Prepare FormData (Matches backend requirements)
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("url", url);
+      
+      if (fileSelected) {
+        formData.append("file", fileSelected); // Key must be 'file' as per the backend route
+      }
+
+      // 2. API Call to your tested endpoint
+      const response = await axiosInstance.post(`/resources/${vaultId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success) {
+        alert("Resource successfully appended to the sanctuary!");
+        clearFields();
+        if (onResourceAdded) onResourceAdded(response.data.data); // Update UI in parent
+        onClose();
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError(err.response?.data?.message || "Failed to sync with the vault.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearFields = () => {
     setTitle("");
     setUrl("");
     setFileSelected(null);
-  }
+  };
 
   return (
-    isOpen && (
-      <div className="min-h-screen bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center p-10">
+      <div className="fixed inset-0 z-50 min-h-screen bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center p-10">
         <div className="w-sm md:w-lg max-w-lg bg-white rounded-xl relative p-5">
           <button
             className="top-3 right-3 text-gray-500 absolute"
@@ -73,7 +90,7 @@ export default function AddResourceForm() {
             Append new intelligence to your research vault.
           </p>
 
-          <form className="">
+          <form className="" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1 mb-5">
               <label className="text-[#72777E] mb-1 text-sm font-semibold">
                 RESOURCE TITLE
@@ -138,21 +155,20 @@ export default function AddResourceForm() {
                   </p>
                 )}
               </div>
-
-              
             </div>
+
             <div className="flex justify-end gap-2 mt-5">
+              {error && <p className="text-red-500 text-xs mr-auto">{error}</p>}
                 <Button variant="gray" onClick={onClose}>
                   Cancel
                 </Button>
 
-                <Button onClick={handleSubmit}>Add to Vault</Button>
-
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                <Button type="submit" disabled={loading}>
+                {loading ? "Syncing..." : "Add to Vault"}
+                </Button>
               </div>
           </form>
         </div>
       </div>
-    )
   );
 }

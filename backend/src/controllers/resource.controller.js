@@ -7,6 +7,34 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Vault } from "../models/vault.model.js";
 
+const formatFile = (file) => {
+    if (!file) return null;
+    return {
+        fileName: file.fileName,
+        filePath: file.filePath,
+        uploadedAt: file.uploadedAt
+    };
+};
+
+const formatResource = (resource) => {
+    const files = Array.isArray(resource.file)
+        ? resource.file.map(formatFile).filter(Boolean)
+        : [];
+
+    return {
+        id: resource._id,
+        title: resource.title,
+        url: resource.url,
+        vaultId: resource.vaultId,
+        createdBy: resource.createdBy?._id || resource.createdBy,
+        createdByUsername: resource.createdBy?.username || undefined,
+        createdByFullName: resource.createdBy?.fullName || undefined,
+        files,
+        createdAt: resource.createdAt,
+        updatedAt: resource.updatedAt
+    };
+};
+
 const createResource = asyncHandler(async (req, res) => {
     const { vaultId } = req.params;
     const { title, url } = req.body;
@@ -31,10 +59,17 @@ const createResource = asyncHandler(async (req, res) => {
         }
     }
 
+    if (!title || !title.trim()) {
+        throw new ApiError(400, "Title is required for a resource.");
+    }
+    if (url !== undefined && url !== null && !String(url).trim()) {
+        throw new ApiError(400, "URL cannot be empty or whitespace.");
+    }
+
     // 2. Create the Resource entry first
     const resource = await Resource.create({
-        title,
-        url,
+        title: title.trim(),
+        url: url ? url.trim() : undefined,
         vaultId,
         createdBy: req.user._id
     });
@@ -61,12 +96,23 @@ const createResource = asyncHandler(async (req, res) => {
         await resource.save();
     }
 
-    // Return the resource populated with its file info
+    const responsePayload = {
+        id: resource._id,
+        title: resource.title,
+        url: resource.url,
+        vaultId: resource.vaultId,
+        createdBy: resource.createdBy,
+        files: fileEntry ? [{ fileName: fileEntry.fileName, filePath: fileEntry.filePath }] : [],
+        createdAt: resource.createdAt,
+        updatedAt: resource.updatedAt,
+        createdByFullName: req.user.fullName
+    };
+
     return res.status(201).json(
         new ApiResponse(
             201,
-            { ...resource._doc, fileDetails: fileEntry },
-            "Resource and file created successfully"
+            responsePayload,
+            "Resource created successfully"
         )
     );
 });
@@ -103,14 +149,17 @@ const getVaultResources = asyncHandler(async (req, res) => {
         .populate("file") // Swap file IDs for actual File documents
         .sort({ createdAt: -1 }); // Show newest first
 
+    const responseData = resources.map(formatResource);
+
     return res.status(200).json(
-        new ApiResponse(200, resources, "Resources retrieved successfully")
+        new ApiResponse(200, responseData, "Resources retrieved successfully")
     );
 });
 
 export { getVaultResources };
 
 const getResourceById = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
     const { resourceId } = req.params;
 
     // 1. Find the resource first to get its vaultId
@@ -121,20 +170,27 @@ const getResourceById = asyncHandler(async (req, res) => {
     if (!resource) {
         throw new ApiError(404, "Resource not found in the sanctuary.");
     }
+    
+    const vault = await Vault.findOne({
+        _id: resource.vaultId,
+        createdBy: userId
+    }).lean();
 
     // 2. Authorization: Check if user has access to the parent vault
+    const isCreator = !!vault;
+
     const membership = await VaultMember.findOne({
         vaultId: resource.vaultId,
         userId: req.user._id
     });
 
-    if (!membership) {
+    if (!isCreator && !membership) {
         throw new ApiError(403, "You do not have permission to view this resource.");
     }
 
-    // 3. Format the response as per Bilal's requirement
+    // 3. Format the response
     return res.status(200).json(
-        new ApiResponse(200, resource, "Resource details retrieved successfully")
+        new ApiResponse(200, formatResource(resource), "Resource details retrieved successfully")
     );
 });
 
@@ -162,15 +218,34 @@ const updateResource = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Access denied. Only the creator or vault owner can edit this.");
     }
 
-    // 3. Perform the update
-    // We only update if the field is actually provided in the body
-    if (title) resource.title = title;
-    if (url) resource.url = url;
+    // 3. Validate and perform the update
+    if (title !== undefined) {
+        if (!title || !title.trim()) {
+            throw new ApiError(400, "Title cannot be empty or whitespace.");
+        }
+        resource.title = title.trim();
+    }
+
+    if (url !== undefined) {
+        if (!url || !url.trim()) {
+            throw new ApiError(400, "URL cannot be empty or whitespace.");
+        }
+        resource.url = url.trim();
+    }
+
+    if (title === undefined && url === undefined) {
+        throw new ApiError(400, "Nothing to update. Provide title or url.");
+    }
 
     await resource.save();
 
+    // Fetch the updated resource with populated files and creator info
+    const updatedResource = await Resource.findById(resourceId)
+        .populate("createdBy", "username fullName email")
+        .populate("file");
+
     return res.status(200).json(
-        new ApiResponse(200, resource, "Resource updated successfully.")
+        new ApiResponse(200, formatResource(updatedResource), "Resource updated successfully.")
     );
 });
 

@@ -34,8 +34,6 @@ const createVault = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Something went wrong while creating a vault.');
     }
 
-    console.log(vault);
-
     return res
     .status(200)
     .json(
@@ -71,35 +69,73 @@ const getUserVaults = asyncHandler(async (req, res) => {
         _id: { $in: memberVaultIds } // find vaults where ID is in this array
     }).lean();
 
-    // combine both arrays with roles
-    const allVaults = [];
-    
+    const vaultMap = new Map();
+
     // add created vaults with Owner role
     createdVaults.forEach(vault => {
-        allVaults.push({
-            ...vault,
+        vaultMap.set(vault._id.toString(), {
+            id: vault._id,
+            name: vault.name,
+            description: vault.description,
+            createdAt: vault.createdAt,
+            updatedAt: vault.updatedAt,
             role: 'Owner'
-        })
-    })
-
-    // add member vaults with their specific role
-    memberVaults.forEach(vault => {
-        const membership = membershipRecords.find(
-            record => record.vaultId.toString() === vault._id.toString()
-        );
-        allVaults.push({
-            ...vault,
-            role: membership.role
-        })
+        });
     });
 
-    // return formatted response
+    // add member vaults only if they are not already included as Owner
+    memberVaults.forEach(vault => {
+        const vaultIdStr = vault._id.toString();
+        if (!vaultMap.has(vaultIdStr)) {
+            const membership = membershipRecords.find(
+                record => record.vaultId.toString() === vaultIdStr
+            );
+            vaultMap.set(vaultIdStr, {
+                id: vault._id,
+                name: vault.name,
+                description: vault.description,
+                createdAt: vault.createdAt,
+                updatedAt: vault.updatedAt,
+                role: membership?.role || 'Member'
+            });
+        }
+    });
+
+    const allVaults = Array.from(vaultMap.values());
+
+    // get resources of all vaults
+    const allVaultsWithResourceCount = await Promise.all(
+        allVaults.map(async (vault) => {
+        const resourceCount = await Resource.countDocuments({
+            vaultId: vault.id
+        });
+
+        return {
+            ...vault,
+            resourceCount: resourceCount
+        }
+        })
+    );
+    
+
+    if (allVaults.length === 0) {
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                [],
+                'No vaults found.'
+            )
+        );
+    }
+
     return res
     .status(200)
     .json(
         new ApiResponse(
             200, 
-            allVaults,
+            allVaultsWithResourceCount,
             'Vaults fetched successfully'
         )
     );

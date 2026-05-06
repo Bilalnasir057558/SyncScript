@@ -39,8 +39,7 @@ export default function DashboardPage() {
       });
 
       const savedVault = res.data;
-      console.log(res.data);
-
+      
       // replace temp vault with real vault
       setVaults((prev) =>
         prev.map((vault) =>
@@ -110,8 +109,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Dynamic Vaults */}
           {displayVaults.length > 0 ? (
-            displayVaults.map((vault) => (
-              <Link key={vault._id} to={`/vaults/${vault._id}`}>
+            displayVaults.map((vault) => (     
+              <Link 
+                key={vault.id} 
+                to={`/vaults/${vault.id}`}
+                state={ { vault } }
+              >
                     <VaultCard {...vault} />
               </Link>
             ))

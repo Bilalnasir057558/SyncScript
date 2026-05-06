@@ -3,7 +3,7 @@ export default function VaultCard({
   description,
   createdAt,
   role,
-  resources = 0,
+  resourceCount,
 }) {
   const getRelativeTime = (dateString) => {
     const createdDate = new Date(dateString);
@@ -52,7 +52,7 @@ export default function VaultCard({
 
       {/* Bottom */}
       <div className="mt-5 flex items-end justify-between text-xs text-gray-500">
-        <span>{resources} resources</span>
+        <span>{resourceCount} resources</span>
         <span>{getRelativeTime(createdAt)}</span>
       </div>
     </div>

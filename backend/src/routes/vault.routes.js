@@ -1,7 +1,9 @@
 // import Router from "express";
 import { Router } from "express";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 import { createVault, deleteVault, getUserVaults, getVaultById, updateVault } from "../controllers/vault.controller.js";
+import { createResource, getVaultResources } from "../controllers/resource.controller.js";
 import { addMember, getVaultMembers, removeMember, updateMemberRole } from "../controllers/member.controller.js";
 
 const router = Router();
@@ -30,6 +32,18 @@ router.route('/:vaultId').put(
 router.route('/:vaultId').delete(
     verifyJWT,
     deleteVault
+)
+
+// resource endpoints
+router.route('/:vaultId/resources').post(
+    verifyJWT,
+    upload.single('file'),
+    createResource
+)
+
+router.route('/:vaultId/resources').get(
+    verifyJWT,
+    getVaultResources
 )
 
 // vault collaboration endpoints

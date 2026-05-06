@@ -14,6 +14,7 @@ export default function VaultDetail() {
 
   // Initialize state with the passed data (if exists)
   const [vault, setVault] = useState(location.state?.vault || null);
+  const role = location.state?.vault?.role || 'Unknown';
   const [loading, setLoading] = useState(!vault);
 
   const [resources, setResources] = useState([]);
@@ -76,8 +77,11 @@ export default function VaultDetail() {
                 <Icon name="share" size="16px" />
                 Share
               </Button>
-              <Button onClick={() => setOpen(true)} className="flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200">
-                <Icon name="add" size="16px" />
+              <Button 
+                disabled={role === 'Viewer'}
+                onClick={() => setOpen(true)} 
+                className={`flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200 ${role === 'Viewer' ? "bg-gray-300 text-black tracking-wider font-semibold hover:bg-gray-300 hover:cursor-default hover:scale-none" : ""}`}>
+                <Icon name="add" size="16px"/>
                 Add Resource
               </Button>
             </div>

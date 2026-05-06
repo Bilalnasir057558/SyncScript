@@ -34,8 +34,6 @@ const createVault = asyncHandler(async (req, res) => {
         throw new ApiError(500, 'Something went wrong while creating a vault.');
     }
 
-    console.log(vault);
-
     return res
     .status(200)
     .json(
@@ -105,6 +103,21 @@ const getUserVaults = asyncHandler(async (req, res) => {
 
     const allVaults = Array.from(vaultMap.values());
 
+    // get resources of all vaults
+    const allVaultsWithResourceCount = await Promise.all(
+        allVaults.map(async (vault) => {
+        const resourceCount = await Resource.countDocuments({
+            vaultId: vault.id
+        });
+
+        return {
+            ...vault,
+            resourceCount: resourceCount
+        }
+        })
+    );
+    
+
     if (allVaults.length === 0) {
         return res
         .status(200)
@@ -122,7 +135,7 @@ const getUserVaults = asyncHandler(async (req, res) => {
     .json(
         new ApiResponse(
             200, 
-            allVaults,
+            allVaultsWithResourceCount,
             'Vaults fetched successfully'
         )
     );

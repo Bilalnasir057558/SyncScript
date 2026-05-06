@@ -39,8 +39,7 @@ export default function DashboardPage() {
       });
 
       const savedVault = res.data;
-      console.log(res.data);
-
+      
       // replace temp vault with real vault
       setVaults((prev) =>
         prev.map((vault) =>

@@ -163,9 +163,9 @@ const getVaultById = asyncHandler(async (req, res) => {
     const membership = await VaultMember.find({
         userId,
         vaultId
-    }).lean();
+    }).lean();    
 
-    if(!isCreator && !membership) { //Used || (OR) which rejected if user was NOT creator OR NOT a member. Should be && (AND).
+    if(!isCreator && !membership) { 
         throw new ApiError(403, "You don't have access to this vault.");
     }
 
@@ -176,7 +176,7 @@ const getVaultById = asyncHandler(async (req, res) => {
     if(isCreator) {
         userRole = 'Owner';
     } else {
-        userRole = membership.role;
+        userRole = membership[0].role;
     }
 
     // find details of all members of this vault

@@ -158,6 +158,7 @@ const getVaultResources = asyncHandler(async (req, res) => {
 export { getVaultResources };
 
 const getResourceById = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
     const { resourceId } = req.params;
 
     // 1. Find the resource first to get its vaultId
@@ -168,14 +169,21 @@ const getResourceById = asyncHandler(async (req, res) => {
     if (!resource) {
         throw new ApiError(404, "Resource not found in the sanctuary.");
     }
+    
+    const vault = await Vault.findOne({
+        _id: resource.vaultId,
+        createdBy: userId
+    }).lean();
 
     // 2. Authorization: Check if user has access to the parent vault
+    const isCreator = !!vault;
+
     const membership = await VaultMember.findOne({
         vaultId: resource.vaultId,
         userId: req.user._id
     });
 
-    if (!membership) {
+    if (!isCreator && !membership) {
         throw new ApiError(403, "You do not have permission to view this resource.");
     }
 
@@ -230,8 +238,13 @@ const updateResource = asyncHandler(async (req, res) => {
 
     await resource.save();
 
+    // Fetch the updated resource with populated files and creator info
+    const updatedResource = await Resource.findById(resourceId)
+        .populate("createdBy", "username fullName email")
+        .populate("file");
+
     return res.status(200).json(
-        new ApiResponse(200, formatResource(resource), "Resource updated successfully.")
+        new ApiResponse(200, formatResource(updatedResource), "Resource updated successfully.")
     );
 });
 

@@ -6,6 +6,6 @@ const router = Router();
 
 router.route("/:resourceId")
 .get(verifyJWT, getResourceById)
-.put(verifyJWT, updateResource);
+.patch(verifyJWT, updateResource);
 
 export default router;

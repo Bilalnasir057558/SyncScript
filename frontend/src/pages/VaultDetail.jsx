@@ -6,6 +6,7 @@ import SideMenu from "../components/Sidemenu";
 import axiosInstance from "../api/axios";
 import { useState } from "react";
 import { useEffect } from "react";
+import AddResourceForm from "../components/AddResourceForm";
 
 export default function VaultDetail() {
   const { vaultId } = useParams();
@@ -16,7 +17,8 @@ export default function VaultDetail() {
   const [loading, setLoading] = useState(!vault);
 
   const [resources, setResources] = useState([]);
-
+  const [open, setOpen] = useState(false);
+ 
   useEffect(() => {
     const fetchVaultAndResources = async () => {
       try {
@@ -74,7 +76,7 @@ export default function VaultDetail() {
                 <Icon name="share" size="16px" />
                 Share
               </Button>
-              <Button className="flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200">
+              <Button onClick={() => setOpen(true)} className="flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200">
                 <Icon name="add" size="16px" />
                 Add Resource
               </Button>
@@ -136,6 +138,14 @@ export default function VaultDetail() {
             ))
           ) : (
             <p className="text-slate-500">No resources available.</p>
+          )}
+
+          {open && (
+            <AddResourceForm 
+                vaultId={vaultId}
+                onResourceAdded={setResources}
+                onClose={() => setOpen(false)}
+            />
           )}
         </div>
       </main>

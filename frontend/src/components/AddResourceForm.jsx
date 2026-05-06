@@ -47,7 +47,7 @@ export default function AddResourceForm({ vaultId, onResourceAdded, onClose }) {
       }
 
       // 2. API Call to your tested endpoint
-      const response = await axiosInstance.post(`/resources/${vaultId}`, formData, {
+      const response = await axiosInstance.post(`/vaults/${vaultId}/resources`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -56,7 +56,9 @@ export default function AddResourceForm({ vaultId, onResourceAdded, onClose }) {
       if (response.data.success) {
         alert("Resource successfully appended to the sanctuary!");
         clearFields();
-        if (onResourceAdded) onResourceAdded(response.data.data); // Update UI in parent
+        const newResource = response.data.data;
+        if (onResourceAdded) onResourceAdded(prev => [newResource, ...prev]); // Update UI in parent
+        console.log(newResource);
         onClose();
       }
     } catch (err) {

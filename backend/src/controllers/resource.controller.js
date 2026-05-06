@@ -104,7 +104,8 @@ const createResource = asyncHandler(async (req, res) => {
         createdBy: resource.createdBy,
         files: fileEntry ? [{ fileName: fileEntry.fileName, filePath: fileEntry.filePath }] : [],
         createdAt: resource.createdAt,
-        updatedAt: resource.updatedAt
+        updatedAt: resource.updatedAt,
+        createdByFullName: req.user.fullName
     };
 
     return res.status(201).json(

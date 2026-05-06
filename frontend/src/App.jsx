@@ -9,14 +9,10 @@ import { Routes, Route } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-import VaultDetail from './pages/VaultDetail';
 
 function App() {
   return (
 
-    // all basic routes are added
-    // TODO: implement guest routes and protected routes later
-    // TODO: implement nested routes if any in future
     <Routes>
       <Route path='/' element={<LandingPage />} />
       <Route path='/login' element={<Login />} />

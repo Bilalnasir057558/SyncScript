@@ -16,6 +16,7 @@ export default function VaultDetail() {
 
   // Initialize state with the passed data (if exists)
   const [vault, setVault] = useState(location.state?.vault || null);
+  const role = location.state?.vault?.role || "Unknown";
   const [loading, setLoading] = useState(!vault);
 
   const [resources, setResources] = useState([]);
@@ -47,7 +48,7 @@ export default function VaultDetail() {
           vaultPromise,
         ]);
 
-        setResources(resResponse.data.data);        
+        setResources(resResponse.data.data);
 
         if (vaultResponse) {
           setVault(vaultResponse.data.data);
@@ -88,7 +89,11 @@ export default function VaultDetail() {
                 <Icon name="share" size="16px" />
                 Share
               </Button>
-              <Button onClick={() => setOpen(true)} className="flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200">
+              <Button
+                disabled={role === "Viewer"}
+                onClick={() => setOpen(true)}
+                className={`flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200 ${role === "Viewer" ? "bg-gray-300 text-black tracking-wider font-semibold hover:bg-gray-300 hover:cursor-default hover:scale-none" : ""}`}
+              >
                 <Icon name="add" size="16px" />
                 Add Resource
               </Button>
@@ -99,7 +104,7 @@ export default function VaultDetail() {
         <div className="flex flex-col gap-6 mt-8 w-full lg:w-3/4 xl:w-2/3">
           {resources.length > 0 ? (
             resources.map((resource) => (
-              <Link to={`/resource/${resource.id}`} key={resource.id} className="block">
+              <Link to={`/resource/${resource.id}`} key={resource.id} className="block" state={{ resource }}>
                 <div
                   className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                 >
@@ -138,16 +143,20 @@ export default function VaultDetail() {
                       )}
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-                  <span>
-                    Created by <strong className="text-slate-900">{resource.createdByFullName || resource.createdByUsername || "Unknown"}</strong>
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    Resource
-                  </span>
-                </div>
+                  <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Created by{" "}
+                      <strong className="text-slate-900">
+                        {resource.createdByFullName ||
+                          resource.createdByUsername ||
+                          "Unknown"}
+                      </strong>
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                      Resource
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))

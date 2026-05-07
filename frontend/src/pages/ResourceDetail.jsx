@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import SideMenu from '../components/Sidemenu';
 import Header from "../components/HeaderNavbar";
 import MobileNav from "../components/MobileNav";
@@ -13,10 +13,12 @@ export default function ResourceDetail() {
   const { resourceId } = useParams(); // Get ID from URL: /resource/:resourceId
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("My Vaults");
+  const location = useLocation();
+
   // 1. Updated State to handle real data
-  const [resource, setResource] = useState(null);
+  const [resource, setResource] = useState(location.state?.resource || null);
   const [annotations, setAnnotations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!resource);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -34,20 +36,26 @@ export default function ResourceDetail() {
 
   // 2. Fetch Resource Details on mount
   useEffect(() => {
-    const fetchResourceData = async () => {
+    const fetchResourceAndAnnotations = async () => {
       try {
-        setLoading(true);
-        // Endpoint #17: Fetch resource metadata
-        const response = await axiosInstance.get(`/resources/${resourceId}`);
-        const data = response.data.data;
-        setResource(data);
-        setEditTitle(data.title);
-        setEditUrl(data.url || "");
-        
-        // TODO: Once annotations endpoint #21 is ready, fetch them here:
-        const annRes = await axiosInstance.get(`/resources/${resourceId}/annotations`);
-        setAnnotations(annRes.data.data);
-        
+        const resourcePromise = await axiosInstance.get(
+          `/resources/${resourceId}`,
+        );
+
+        const annotationPromise = await axiosInstance.get(
+          `/resources/${resourceId}/annotations`,
+        );
+
+        const [resResource, resAnnotations] = await Promise.all([
+          resourcePromise,
+          annotationPromise,
+        ]);
+
+        setResource(resResource.data.data);
+        setEditTitle(resResource.data.data.title);
+        setEditUrl(resResource.data.data.url || "");        
+
+        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -55,7 +63,7 @@ export default function ResourceDetail() {
       }
     };
 
-    if (resourceId) fetchResourceData();
+    fetchResourceAndAnnotations();
   }, [resourceId]);
 
   const handleSubmit = async () => {
@@ -64,27 +72,59 @@ export default function ResourceDetail() {
       return;
     }
 
-    try {
-      // Endpoint #20: Create Annotation (assuming this is the structure)
-      const response = await axiosInstance.post(`/resources/${resourceId}/annotations`, {
-        content: noteText,
-        type: 'note'
-      });
+    // temp annotation for immediate update
+    const tempId = `temp-${Date.now()}`;
 
-      if (response.data.success) {
-        setAnnotations((prev) => [response.data.data, ...prev]);
-        setNoteText("");
-        alert("Annotation synced to sanctuary!");
-      }
+    const tempAnnotation = {
+      id: tempId,
+      content: noteText,
+      status: "saving",
+    };
+
+    setAnnotations((prev) => [tempAnnotation, ...prev]);
+
+    try {
+      const response = await axiosInstance.post(
+        `/resources/${resourceId}/annotations`,
+        {
+          content: noteText,
+        },
+      );
+      
+      const savedAnnotation = response.data.data;      
+
+      setAnnotations((prev) =>
+        prev.map((note) =>
+          note.id === tempId ? { ...savedAnnotation, status: "saved" } : note
+        )
+      );
+
+      setNoteText("");
+      alert("Annotation synced to sanctuary!");
     } catch (error) {
       console.error("Save failed:", error);
+      setAnnotations((prev) => prev.filter((note) => note.id !== tempId));
       alert("Failed to save note.");
+    } finally {
+      setLoading(false);
     }
   };
 
   // 3. Loading and Error Guards
-  if (loading) return <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">Unlocking research data...</div>;
-  if (!resource) return <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">Resource not found.</div>;
+  if (loading)
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">
+        Unlocking research data...
+      </div>
+    );
+  if (!resource)
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#F7F9FC]">
+        Resource not found.
+      </div>
+    );
+
+  const annotationCount = Array.isArray(annotations) ? annotations.length : 0;
 
   const handleUpdate = async () => {
   try {
@@ -150,7 +190,7 @@ export default function ResourceDetail() {
                         onClick={handleDelete}
                         className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg"
                     >
-                        <Icon name="trash" size="14px" className="rotate-180" /> {/* Reusing an icon temporarily, or use trash */}
+                        <Icon name="trash" size="14px" />
                         Remove Resource
                     </button>
                   </div>
@@ -169,15 +209,23 @@ export default function ResourceDetail() {
                       <Icon name="edit" size="18px" />
                     </button>
                     </div>
-                    <a
-                      href={resource.url || (resource.file?.[0]?.filePath)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline"
-                    >
-                      <Icon name={resource.url ? "link" : "file"} size="14px" />
-                      {resource.url || "View Attached Document"}
-                    </a>
+                   <a
+                href={resource.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline mb-1"
+              >
+                <Icon name="link" size="14px" />
+                {resource.url || "No link available"}
+              </a>
+              <a
+                className={`flex items-center gap-2 text-sm font-medium ${resource.files?.[0] ? "text-sky-600 hover:underline" : "text-gray-500"}`}
+                target="_blank"
+                href={resource.files?.[0]?.filePath}
+              >
+                <Icon name="file" size="14px" />
+                {resource.files?.[0]?.fileName || "No file attached"}
+              </a>
                   </>
               )}
             </div>
@@ -197,11 +245,11 @@ export default function ResourceDetail() {
             {/* Left Column: Annotations (8/12) */}
             <div className="col-span-12 lg:col-span-8 space-y-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-[#0B3C5D]">
+                <h3 className="flex items-center gap-2 text-xl md:text-2xl font-bold text-[#0B3C5D]">
                   <Icon name="note" size="20px" /> Annotations / Notes
                 </h3>
                 <span className="bg-sky-100 text-sky-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                  {annotations.length} Notes Total
+                  {annotationCount} Notes Total
                 </span>
               </div>
 
@@ -256,13 +304,14 @@ export default function ResourceDetail() {
               </div>
 
               {/* Mapping Real Annotations */}
-              {annotations.length > 0 ? (
+              {annotationCount > 0 ? (
                 annotations.map((note) => (
-                  <AnnotationCard 
-                    key={note._id} 
-                    user={note.userId?.username || "Researcher"} 
+                  <AnnotationCard                    
+                    key={note._id}
+                    user={note.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
-                    text={note.content} 
+                    time={new Date(note.createdAt).toLocaleTimeString()}
+                    text={note.content}
                   />
                 ))
               ) : (

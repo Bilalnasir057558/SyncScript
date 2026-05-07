@@ -17,20 +17,26 @@ export default function AnnotationCard({
         <div className="p-2 bg-sky-50 rounded-lg text-sky-600">
           <Icon name="search" size="16px" />
         </div>
+
         <div>
           <h4 className="text-md font-bold text-gray-600 uppercase tracking-wider">
             {user}
           </h4>
-          <p className="tracking-wide text-xs text-gray-500">{date} • {time}</p>
+
+          <p className="tracking-wide text-xs text-gray-500">
+            {date} • {time}
+          </p>
         </div>
       </div>
+
       <div className="text-slate-600 leading-relaxed mb-4">
         {parse(text)}
       </div>
 
       {canEdit && (
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-3 mt-4">
           <button
+            className="px-4 py-2 rounded-lg bg-sky-100 text-sky-700 font-medium hover:bg-sky-200 transition"
             onClick={() => {
               const updatedText = prompt("Edit annotation", text);
 
@@ -41,7 +47,13 @@ export default function AnnotationCard({
           >
             Edit
           </button>
-          <button onClick={onDelete}>Delete</button>
+
+          <button
+            className="px-4 py-2 rounded-lg bg-red-100 text-red-600 font-medium hover:bg-red-200 transition"
+            onClick={onDelete}
+          >
+            Delete
+          </button>
         </div>
       )}
     </div>

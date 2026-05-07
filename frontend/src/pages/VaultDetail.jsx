@@ -92,11 +92,7 @@ export default function VaultDetail() {
         <div className="flex flex-col gap-6 mt-8 w-full lg:w-2/3">
           {resources.length > 0 ? (
             resources.map((resource) => (
-              <Link 
-                key={resource.id} 
-                to={`/resource/${resource.id}`}
-                state={{ resource }}
-              >
+              <div key={resource.id}>
                 <div
                   className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                 >
@@ -105,9 +101,13 @@ export default function VaultDetail() {
                       <Icon name="resource" size="24px" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                      <Link
+                        to={`/resource/${resource.id}`}
+                        state={{ resource }}
+                        className="text-lg font-semibold text-slate-900 sm:text-xl hover:text-blue-600"
+                      >
                         {resource.title}
-                      </h3>
+                      </Link>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
                         {resource.url ? (
                           <a
@@ -151,7 +151,7 @@ export default function VaultDetail() {
                     </span>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))
           ) : (
             <p className="text-slate-500">No resources available.</p>

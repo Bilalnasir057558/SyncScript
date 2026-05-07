@@ -8,6 +8,7 @@ import Icon from "../components/Icon";
 import Button from "../components/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import axiosInstance from "../api/axios";
+import { useAuth } from "../context/auth.context";
 
 export default function ResourceDetail() {
   const { resourceId } = useParams(); // Get ID from URL: /resource/:resourceId
@@ -19,6 +20,7 @@ export default function ResourceDetail() {
   const [resource, setResource] = useState(location.state?.resource || null);
   const [annotations, setAnnotations] = useState([]);
   const [loading, setLoading] = useState(!resource);
+  const {user} = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -55,11 +57,13 @@ export default function ResourceDetail() {
         setEditTitle(resResource.data.data.title);
         setEditUrl(resResource.data.data.url || "");
 
+
         setAnnotations(
           Array.isArray(resAnnotations.data.data)
             ? resAnnotations.data.data
             : [],
-        );
+        );        
+        
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -82,6 +86,7 @@ export default function ResourceDetail() {
     const tempAnnotation = {
       id: tempId,
       content: noteText,
+      username: user?.username,
       createdAt: new Date().toLocaleDateString(),
       status: "saving",
     };
@@ -96,11 +101,11 @@ export default function ResourceDetail() {
         },
       );
 
-      const savedAnnotation = response.data.data;
+      const savedAnnotation = response.data.data;      
 
       setAnnotations((prev) =>
         prev.map((note) =>
-          note.id === tempId ? { ...savedAnnotation, status: "saved" } : note,
+          note.id === tempId ? { ...savedAnnotation, username: user?.username, status: "saved" } : note,
         ),
       );
 
@@ -326,7 +331,7 @@ export default function ResourceDetail() {
                 annotations.map((note) => (
                   <AnnotationCard
                     key={note._id}
-                    user={note.username || "Researcher"}
+                    user={note?.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
                     time={new Date(note.createdAt).toLocaleTimeString()}
                     text={note.content}

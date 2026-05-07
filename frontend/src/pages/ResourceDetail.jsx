@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import SideMenu from '../components/Sidemenu';
 import Header from "../components/HeaderNavbar";
+import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";
 import Icon from "../components/Icon";
 import Button from "../components/Button";
@@ -10,7 +11,8 @@ import axiosInstance from "../api/axios";
 
 export default function ResourceDetail() {
   const { resourceId } = useParams(); // Get ID from URL: /resource/:resourceId
-  
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("My Vaults");
   // 1. Updated State to handle real data
   const [resource, setResource] = useState(null);
   const [annotations, setAnnotations] = useState([]);
@@ -24,21 +26,27 @@ export default function ResourceDetail() {
   const [noteText, setNoteText] = useState("");
   const textareaRef = useRef(null);
 
+  useEffect(() => {
+    if (activeTab !== "My Vaults") {
+      navigate("/dashboard");
+    }
+  }, [activeTab, navigate]);
+
   // 2. Fetch Resource Details on mount
   useEffect(() => {
     const fetchResourceData = async () => {
       try {
         setLoading(true);
         // Endpoint #17: Fetch resource metadata
-        const response = await axiosInstance.get(`/resources/detail/${resourceId}`);
+        const response = await axiosInstance.get(`/resources/${resourceId}`);
         const data = response.data.data;
         setResource(data);
         setEditTitle(data.title);
         setEditUrl(data.url || "");
         
         // TODO: Once annotations endpoint #21 is ready, fetch them here:
-        // const annRes = await axiosInstance.get(`/resources/${resourceId}/annotations`);
-        // setAnnotations(annRes.data.data);
+        const annRes = await axiosInstance.get(`/resources/${resourceId}/annotations`);
+        setAnnotations(annRes.data.data);
         
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
@@ -80,7 +88,7 @@ export default function ResourceDetail() {
 
   const handleUpdate = async () => {
   try {
-    const response = await axiosInstance.put(`/resources/detail/${resourceId}`, {
+    const response = await axiosInstance.patch(`/resources/${resourceId}`, {
       title: editTitle,
       url: editUrl
     });
@@ -94,28 +102,63 @@ export default function ResourceDetail() {
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
-      <SideMenu activeItem="My Vaults" />
+      <SideMenu 
+        activeItem={activeTab}
+        setActiveItem={setActiveTab}
+      />
 
       <div className="grow flex flex-col">
-        {/* <Header /> */}
+        <Header />
 
-        <main className="mt-16 ml-0 md:ml-64 p-8 md:p-12">
+        <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
           {/* Title and Header Actions */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight mb-4">
-                {resource.title}
-              </h1>
-              <a
-                href={resource.url || (resource.file?.[0]?.filePath)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline"
-              >
-                <Icon name={resource.url ? "link" : "file"} size="14px" />
-                {resource.url || "View Attached Document"}
-              </a>
+          <div className="flex justify-between items-start mb-8 mt-16">
+            <div className="max-w-3xl flex-grow">
+              {isEditing ? (
+                /* --- EDITING UI --- */
+                <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <input 
+                    className="text-2xl font-bold text-[#0B3C5D] border-b border-sky-200 focus:outline-none"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                  <input 
+                    className="text-sm text-sky-600 focus:outline-none"
+                    value={editUrl}
+                    onChange={(e) => setEditUrl(e.target.value)}
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <Button variant="blue" onClick={handleUpdate} className="py-1 px-4 text-xs">Save Changes</Button>
+                    <Button variant="gray" onClick={() => setIsEditing(false)} className="py-1 px-4 text-xs">Cancel</Button>
+                  </div>
+                </div>
+              ) : (
+                /* --- DISPLAY UI --- */
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
+                      {resource.title}
+                    </h1>
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="p-2 text-slate-400 hover:text-sky-600 transition-colors"
+                    >
+                      <Icon name="edit" size="18px" />
+                    </button>
+                    </div>
+                    <a
+                      href={resource.url || (resource.file?.[0]?.filePath)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline"
+                    >
+                      <Icon name={resource.url ? "link" : "file"} size="14px" />
+                      {resource.url || "View Attached Document"}
+                    </a>
+                  </>
+              )}
             </div>
+
             <div className="flex gap-3">
               <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                 <Icon name="share" size="20px" className="text-slate-600" />
@@ -248,11 +291,11 @@ export default function ResourceDetail() {
                   </button>
                 </div>
               </div>
-              ={" "}
             </div>
           </div>
         </main>
       </div>
+      <MobileNav activeItem={activeTab} setActiveItem={setActiveTab} />
     </div>
   );
 }

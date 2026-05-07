@@ -44,7 +44,7 @@ export default function ResourceDetail() {
 
         setResource(resResource.data.data);
         setEditTitle(resResource.data.data.title);
-        setEditUrl(resResource.data.data.url || "");        
+        setEditUrl(resResource.data.data.url || "");
 
         setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
@@ -81,8 +81,8 @@ export default function ResourceDetail() {
           content: noteText,
         },
       );
-      
-      const savedAnnotation = response.data.data;      
+
+      const savedAnnotation = response.data.data;
 
       setAnnotations((prev) =>
         prev.map((note) =>
@@ -131,6 +131,41 @@ export default function ResourceDetail() {
       alert("Archival data updated.");
     } catch (err) {
       alert(err.response?.data?.message || "Update failed.");
+    }
+  };
+
+  const handleDelete = async (annotationId) => {
+    try {
+      await axiosInstance.delete(`/annotations/${annotationId}`);
+
+      setAnnotations(prev =>
+        prev.filter(note => note._id !== annotationId)
+      );
+    } catch (error) {
+      console.log(error);
+      alert("Delete failed");
+    }
+  };
+
+  const handleEdit = async (annotationId, updatedContent) => {
+    try {
+      const response = await axiosInstance.put(
+        `/annotations/${annotationId}`,
+        {
+          content: updatedContent,
+        }
+      );
+
+      setAnnotations(prev =>
+        prev.map(note =>
+          note._id === annotationId
+            ? response.data.data
+            : note
+        )
+      );
+    } catch (error) {
+      console.log(error);
+      alert("Update failed");
     }
   };
 
@@ -242,12 +277,15 @@ export default function ResourceDetail() {
               {/* Mapping Real Annotations */}
               {annotationCount > 0 ? (
                 annotations.map((note) => (
-                  <AnnotationCard                    
+                  <AnnotationCard
                     key={note._id}
                     user={note.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
                     time={new Date(note.createdAt).toLocaleTimeString()}
                     text={note.content}
+                    canEdit={true}
+                    onDelete={() => handleDelete(note._id)}
+                    onEdit={(updatedText) => handleEdit(note._id, updatedText)}
                   />
                 ))
               ) : (

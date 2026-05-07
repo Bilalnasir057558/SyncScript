@@ -6,7 +6,10 @@ export default function AnnotationCard({
   user,
   date,
   time,
-  text
+  text,
+  onDelete,
+  onEdit,
+  canEdit,
 }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-6 border-l-4 border-l-sky-500">
@@ -24,6 +27,23 @@ export default function AnnotationCard({
       <div className="text-slate-600 leading-relaxed mb-4">
         {parse(text)}
       </div>
+
+      {canEdit && (
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => {
+              const updatedText = prompt("Edit annotation", text);
+
+              if (updatedText && updatedText.trim()) {
+                onEdit(updatedText);
+              }
+            }}
+          >
+            Edit
+          </button>
+          <button onClick={onDelete}>Delete</button>
+        </div>
+      )}
     </div>
   );
 }

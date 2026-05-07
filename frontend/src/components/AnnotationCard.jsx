@@ -18,7 +18,7 @@ export default function AnnotationCard({
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             {user}
           </h4>
-          <p className="text-[10px] text-slate-400">{date} • {time}</p>
+          <p className="tracking-wide text-[10px] text-slate-400">{date} • {time}</p>
         </div>
       </div>
       <div className="text-slate-600 leading-relaxed mb-4">

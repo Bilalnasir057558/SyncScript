@@ -46,7 +46,7 @@ export default function ResourceDetail() {
         setEditTitle(resResource.data.data.title);
         setEditUrl(resResource.data.data.url || "");
 
-        setAnnotations(resAnnotations.data.data);
+        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -63,6 +63,17 @@ export default function ResourceDetail() {
       return;
     }
 
+    // temp annotation for immediate update
+    const tempId = `temp-${Date.now()}`;
+
+    const tempAnnotation = {
+      id: tempId,
+      content: noteText,
+      status: "saving",
+    };
+
+    setAnnotations((prev) => [tempAnnotation, ...prev]);
+
     try {
       const response = await axiosInstance.post(
         `/resources/${resourceId}/annotations`,
@@ -70,15 +81,23 @@ export default function ResourceDetail() {
           content: noteText,
         },
       );
+      
+      const savedAnnotation = response.data.data;
 
-      if (response.data.success) {
-        setAnnotations((prev) => [response.data.data, ...prev]);
-        setNoteText("");
-        alert("Annotation synced to sanctuary!");
-      }
+      setAnnotations((prev) =>
+        prev.map((note) =>
+          note.id === tempId ? { ...savedAnnotation, status: "saved" } : note
+        )
+      );
+
+      setNoteText("");
+      alert("Annotation synced to sanctuary!");
     } catch (error) {
       console.error("Save failed:", error);
+      setAnnotations((prev) => prev.filter((note) => note.id !== tempId));
       alert("Failed to save note.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,6 +114,8 @@ export default function ResourceDetail() {
         Resource not found.
       </div>
     );
+
+  const annotationCount = Array.isArray(annotations) ? annotations.length : 0;
 
   const handleUpdate = async () => {
     try {
@@ -137,12 +158,13 @@ export default function ResourceDetail() {
                 {resource.url || "No link available"}
               </a>
               <a
-                className={`flex items-center gap-2 text-sm font-medium ${resource.files[0] ? "text-sky-600 hover:underline" : "text-gray-500"}`}
+                className={`flex items-center gap-2 text-sm font-medium ${resource.files?.[0] ? "text-sky-600 hover:underline" : "text-gray-500"}`}
                 target="_blank"
-                href={resource.files[0]?.filePath}>
-                  <Icon name="file" size="14px" />
-                  {resource.files[0]?.fileName || "No file attached"}
-                </a>
+                href={resource.files?.[0]?.filePath}
+              >
+                <Icon name="file" size="14px" />
+                {resource.files?.[0]?.fileName || "No file attached"}
+              </a>
             </div>
             <div className="flex gap-3">
               <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
@@ -163,7 +185,7 @@ export default function ResourceDetail() {
                   <Icon name="note" size="20px" /> Annotations / Notes
                 </h3>
                 <span className="bg-sky-100 text-sky-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                  {annotations.length} Notes Total
+                  {annotationCount} Notes Total
                 </span>
               </div>
 
@@ -218,12 +240,13 @@ export default function ResourceDetail() {
               </div>
 
               {/* Mapping Real Annotations */}
-              {annotations.length > 0 ? (
+              {annotationCount > 0 ? (
                 annotations.map((note) => (
                   <AnnotationCard
                     key={note._id}
                     user={note.userId?.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
+                    time={new Date(note.createdAt).toLocaleTimeString()}
                     text={note.content}
                   />
                 ))

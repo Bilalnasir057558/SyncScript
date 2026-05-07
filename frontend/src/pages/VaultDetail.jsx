@@ -14,11 +14,12 @@ export default function VaultDetail() {
 
   // Initialize state with the passed data (if exists)
   const [vault, setVault] = useState(location.state?.vault || null);
+  const role = location.state?.vault?.role || "Unknown";
   const [loading, setLoading] = useState(!vault);
 
   const [resources, setResources] = useState([]);
   const [open, setOpen] = useState(false);
- 
+
   useEffect(() => {
     const fetchVaultAndResources = async () => {
       try {
@@ -38,7 +39,7 @@ export default function VaultDetail() {
           vaultPromise,
         ]);
 
-        setResources(resResponse.data.data);        
+        setResources(resResponse.data.data);
 
         if (vaultResponse) {
           setVault(vaultResponse.data.data);
@@ -76,7 +77,11 @@ export default function VaultDetail() {
                 <Icon name="share" size="16px" />
                 Share
               </Button>
-              <Button onClick={() => setOpen(true)} className="flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200">
+              <Button
+                disabled={role === "Viewer"}
+                onClick={() => setOpen(true)}
+                className={`flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200 ${role === "Viewer" ? "bg-gray-300 text-black tracking-wider font-semibold hover:bg-gray-300 hover:cursor-default hover:scale-none" : ""}`}
+              >
                 <Icon name="add" size="16px" />
                 Add Resource
               </Button>
@@ -87,64 +92,76 @@ export default function VaultDetail() {
         <div className="flex flex-col gap-6 mt-8 w-full lg:w-2/3">
           {resources.length > 0 ? (
             resources.map((resource) => (
-              <div
-                key={resource.id}
-                className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              <Link 
+                key={resource.id} 
+                to={`/resource/${resource.id}`}
+                state={{ resource }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF4FF] text-[#0B3C5D] shadow-inner shadow-blue-50">
-                    <Icon name="resource" size="24px" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
-                      {resource.title}
-                    </h3>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                      {resource.url ? (
-                        <a
-                          className="truncate text-blue-600 transition-colors duration-150 hover:text-blue-800"
-                          href={resource.url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {resource.url}
-                        </a>
-                      ) : (
-                        <span className="text-slate-500">No link attached</span>
-                      )}
-                      {resource.files.length > 0 && (
-                        <a
-                          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-blue-300"
-                          href={resource.files[0].filePath}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {resource.files[0].fileName}
-                        </a>
-                      )}
+                <div
+                  className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF4FF] text-[#0B3C5D] shadow-inner shadow-blue-50">
+                      <Icon name="resource" size="24px" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                        {resource.title}
+                      </h3>
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                        {resource.url ? (
+                          <a
+                            className="truncate text-blue-600 transition-colors duration-150 hover:text-blue-800"
+                            href={resource.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {resource.url}
+                          </a>
+                        ) : (
+                          <span className="text-slate-500">
+                            No link attached
+                          </span>
+                        )}
+                        {resource.files.length > 0 && (
+                          <a
+                            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-blue-300"
+                            href={resource.files[0].filePath}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {resource.files[0].fileName}
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-                  <span>
-                    Created by <strong className="text-slate-900">{resource.createdByFullName || resource.createdByUsername || "Unknown"}</strong>
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    Resource
-                  </span>
+                  <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Created by{" "}
+                      <strong className="text-slate-900">
+                        {resource.createdByFullName ||
+                          resource.createdByUsername ||
+                          "Unknown"}
+                      </strong>
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                      Resource
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <p className="text-slate-500">No resources available.</p>
           )}
 
           {open && (
-            <AddResourceForm 
-                vaultId={vaultId}
-                onResourceAdded={setResources}
-                onClose={() => setOpen(false)}
+            <AddResourceForm
+              vaultId={vaultId}
+              onResourceAdded={setResources}
+              onClose={() => setOpen(false)}
             />
           )}
         </div>

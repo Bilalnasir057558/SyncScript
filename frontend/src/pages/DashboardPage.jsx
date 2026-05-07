@@ -37,7 +37,7 @@ export default function DashboardPage() {
         name: data.name,
         description: data.description,
       });
-
+      
       const savedVault = res.data;
       
       // replace temp vault with real vault

@@ -45,7 +45,7 @@ export default function VaultCard({
         <h3 className="font-semibold text-xl text-[#0B3C5D]">{name}</h3>
 
         {/* Description */}
-        <p className="text-sm text-gray-700 mt-1 break-words">
+        <p className="text-sm text-gray-700 mt-1 wrap-break">
           {description || "No description provided"}
         </p>
       </div>

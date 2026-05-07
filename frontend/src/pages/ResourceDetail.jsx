@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useLocation, useParams } from "react-router";
-import SideMenu from "../components/Sidemenu";
+import { useParams, useNavigate, useLocation } from "react-router";
+import SideMenu from '../components/Sidemenu';
 import Header from "../components/HeaderNavbar";
+import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";
 import Icon from "../components/Icon";
 import Button from "../components/Button";
@@ -10,6 +11,8 @@ import axiosInstance from "../api/axios";
 
 export default function ResourceDetail() {
   const { resourceId } = useParams(); // Get ID from URL: /resource/:resourceId
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("My Vaults");
   const location = useLocation();
 
   // 1. Updated State to handle real data
@@ -24,6 +27,12 @@ export default function ResourceDetail() {
   const editorRef = useRef(null);
   const [noteText, setNoteText] = useState("");
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (activeTab !== "My Vaults") {
+      navigate("/dashboard");
+    }
+  }, [activeTab, navigate]);
 
   // 2. Fetch Resource Details on mount
   useEffect(() => {
@@ -118,37 +127,89 @@ export default function ResourceDetail() {
   const annotationCount = Array.isArray(annotations) ? annotations.length : 0;
 
   const handleUpdate = async () => {
+  try {
+    const response = await axiosInstance.patch(`/resources/${resourceId}`, {
+      title: editTitle,
+      url: editUrl
+    });
+    setResource(response.data.data);
+    setIsEditing(false);
+    alert("Archival data updated.");
+  } catch (err) {
+    alert(err.response?.data?.message || "Update failed.");
+  }
+  };
+
+  const handleDelete = async () => {
+  if (window.confirm("Are you sure? This will permanently delete this resource and all its notes.")) {
     try {
-      const response = await axiosInstance.put(
-        `/resources/detail/${resourceId}`,
-        {
-          title: editTitle,
-          url: editUrl,
-        },
-      );
-      setResource(response.data.data);
-      setIsEditing(false);
-      alert("Archival data updated.");
+      const response = await axiosInstance.delete(`/resources/${resourceId}`);
+      if (response.data.success) {
+        alert("Resource removed from archives.");
+        navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Update failed.");
+      alert(err.response?.data?.message || "Remove failed.");
     }
+  }
   };
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
-      <SideMenu activeItem="My Vaults" />
+      <SideMenu 
+        activeItem={activeTab}
+        setActiveItem={setActiveTab}
+      />
 
       <div className="grow flex flex-col">
-        {/* <Header /> */}
+        <Header />
 
-        <main className="mt-16 ml-0 md:ml-64 p-8 md:p-12">
+        <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
           {/* Title and Header Actions */}
-          <div className="flex justify-between items-start mb-8">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight mb-4">
-                {resource.title}
-              </h1>
-              <a
+          <div className="flex justify-between items-start mb-8 mt-16">
+            <div className="max-w-3xl flex-grow">
+              {isEditing ? (
+                /* --- EDITING UI --- */
+                <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                  <input 
+                    className="text-2xl font-bold text-[#0B3C5D] border-b border-sky-200 focus:outline-none"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Resource Title"
+                  />
+                  <input 
+                    className="text-sm text-sky-600 focus:outline-none"
+                    value={editUrl}
+                    onChange={(e) => setEditUrl(e.target.value)}
+                    placeholder="Resource URL"
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <Button variant="blue" onClick={handleUpdate} className="py-1 px-4 text-xs">Save Changes</Button>
+                    <Button variant="gray" onClick={() => setIsEditing(false)} className="py-1 px-4 text-xs">Cancel</Button>
+                    <button 
+                        onClick={handleDelete}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg"
+                    >
+                        <Icon name="trash" size="14px" />
+                        Remove Resource
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* --- DISPLAY UI --- */
+                <>
+                  <div className="flex items-center gap-3 mb-4">
+                    <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
+                      {resource.title}
+                    </h1>
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="p-2 text-slate-400 hover:text-sky-600 transition-colors"
+                    >
+                      <Icon name="edit" size="18px" />
+                    </button>
+                    </div>
+                   <a
                 href={resource.url}
                 target="_blank"
                 rel="noreferrer"
@@ -165,7 +226,10 @@ export default function ResourceDetail() {
                 <Icon name="file" size="14px" />
                 {resource.files?.[0]?.fileName || "No file attached"}
               </a>
+                  </>
+              )}
             </div>
+
             <div className="flex gap-3">
               <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                 <Icon name="share" size="20px" className="text-slate-600" />
@@ -299,11 +363,11 @@ export default function ResourceDetail() {
                   </button>
                 </div>
               </div>
-              ={" "}
             </div>
           </div>
         </main>
       </div>
+      <MobileNav activeItem={activeTab} setActiveItem={setActiveTab} />
     </div>
   );
 }

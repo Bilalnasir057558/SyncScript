@@ -104,7 +104,9 @@ export default function VaultDetail() {
         <div className="flex flex-col gap-6 mt-8 w-full lg:w-3/4 xl:w-2/3">
           {resources.length > 0 ? (
             resources.map((resource) => (
-              <Link to={`/resource/${resource.id}`} key={resource.id} className="block" state={{ resource }}>
+              <div 
+                onClick={() => navigate(`/resource/${resource.id}`, { state: {resource}})} 
+                key={resource.id} className="block">
                 <div
                   className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                 >
@@ -159,7 +161,7 @@ export default function VaultDetail() {
                   </div>
                 </div>
                 </div>
-              </Link>
+              </div>
             ))
           ) : (
             <p className="text-slate-500">No resources available.</p>

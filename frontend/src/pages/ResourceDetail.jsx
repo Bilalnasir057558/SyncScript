@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router";
-import SideMenu from '../components/Sidemenu';
+import SideMenu from "../components/Sidemenu";
 import Header from "../components/HeaderNavbar";
 import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";
@@ -53,9 +53,13 @@ export default function ResourceDetail() {
 
         setResource(resResource.data.data);
         setEditTitle(resResource.data.data.title);
-        setEditUrl(resResource.data.data.url || "");        
+        setEditUrl(resResource.data.data.url || "");
 
-        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
+        setAnnotations(
+          Array.isArray(resAnnotations.data.data)
+            ? resAnnotations.data.data
+            : [],
+        );
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -78,6 +82,7 @@ export default function ResourceDetail() {
     const tempAnnotation = {
       id: tempId,
       content: noteText,
+      createdAt: new Date().toLocaleDateString(),
       status: "saving",
     };
 
@@ -90,13 +95,13 @@ export default function ResourceDetail() {
           content: noteText,
         },
       );
-      
-      const savedAnnotation = response.data.data;      
+
+      const savedAnnotation = response.data.data;
 
       setAnnotations((prev) =>
         prev.map((note) =>
-          note.id === tempId ? { ...savedAnnotation, status: "saved" } : note
-        )
+          note.id === tempId ? { ...savedAnnotation, status: "saved" } : note,
+        ),
       );
 
       setNoteText("");
@@ -127,110 +132,123 @@ export default function ResourceDetail() {
   const annotationCount = Array.isArray(annotations) ? annotations.length : 0;
 
   const handleUpdate = async () => {
-  try {
-    const response = await axiosInstance.patch(`/resources/${resourceId}`, {
-      title: editTitle,
-      url: editUrl
-    });
-    setResource(response.data.data);
-    setIsEditing(false);
-    alert("Archival data updated.");
-  } catch (err) {
-    alert(err.response?.data?.message || "Update failed.");
-  }
+    try {
+      const response = await axiosInstance.patch(`/resources/${resourceId}`, {
+        title: editTitle,
+        url: editUrl,
+      });
+      setResource(response.data.data);
+      setIsEditing(false);
+      alert("Archival data updated.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Update failed.");
+    }
   };
 
   const handleDelete = async () => {
-  if (window.confirm("Are you sure? This will permanently delete this resource and all its notes.")) {
-    try {
-      const response = await axiosInstance.delete(`/resources/${resourceId}`);
-      if (response.data.success) {
-        alert("Resource removed from archives.");
-        navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+    if (
+      window.confirm(
+        "Are you sure? This will permanently delete this resource and all its notes.",
+      )
+    ) {
+      try {
+        const response = await axiosInstance.delete(`/resources/${resourceId}`);
+        if (response.data.success) {
+          alert("Resource removed from archives.");
+          navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+        }
+      } catch (err) {
+        alert(err.response?.data?.message || "Remove failed.");
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Remove failed.");
     }
-  }
   };
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
-      <SideMenu 
-        activeItem={activeTab}
-        setActiveItem={setActiveTab}
-      />
+      <SideMenu activeItem={activeTab} setActiveItem={setActiveTab} />
 
       <div className="grow flex flex-col">
         <Header />
 
         <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
           {/* Title and Header Actions */}
-          <div className="flex justify-between items-start mb-8 mt-16">
-            <div className="max-w-3xl flex-grow">
+          <div className="flex justify-between items-start mb-8 mt-16 gap-3">
+            <div className="max-w-3xl grow">
               {isEditing ? (
                 /* --- EDITING UI --- */
                 <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                  <input 
+                  <input
                     className="text-2xl font-bold text-[#0B3C5D] border-b border-sky-200 focus:outline-none"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     placeholder="Resource Title"
                   />
-                  <input 
+                  <input
                     className="text-sm text-sky-600 focus:outline-none"
                     value={editUrl}
                     onChange={(e) => setEditUrl(e.target.value)}
                     placeholder="Resource URL"
                   />
                   <div className="flex gap-2 mt-2">
-                    <Button variant="blue" onClick={handleUpdate} className="py-1 px-4 text-xs">Save Changes</Button>
-                    <Button variant="gray" onClick={() => setIsEditing(false)} className="py-1 px-4 text-xs">Cancel</Button>
-                    <button 
-                        onClick={handleDelete}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg"
+                    <Button
+                      variant="blue"
+                      onClick={handleUpdate}
+                      className="py-1 px-4 text-xs"
                     >
-                        <Icon name="trash" size="14px" />
-                        Remove Resource
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="gray"
+                      onClick={() => setIsEditing(false)}
+                      className="py-1 px-4 text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <button
+                      onClick={handleDelete}
+                      className="flex items-center gap-1.5 text-sm font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg cursor-pointer"
+                    >
+                      <Icon name="trash" size="16px" />
+                      Remove Resource
                     </button>
                   </div>
                 </div>
               ) : (
                 /* --- DISPLAY UI --- */
                 <>
-                  <div className="flex items-center gap-3 mb-4">
-                    <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
-                      {resource.title}
-                    </h1>
-                    <button 
-                      onClick={() => setIsEditing(true)}
-                      className="p-2 text-slate-400 hover:text-sky-600 transition-colors"
-                    >
-                      <Icon name="edit" size="18px" />
-                    </button>
-                    </div>
-                   <a
-                href={resource.url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline mb-1"
-              >
-                <Icon name="link" size="14px" />
-                {resource.url || "No link available"}
-              </a>
-              <a
-                className={`flex items-center gap-2 text-sm font-medium ${resource.files?.[0] ? "text-sky-600 hover:underline" : "text-gray-500"}`}
-                target="_blank"
-                href={resource.files?.[0]?.filePath}
-              >
-                <Icon name="file" size="14px" />
-                {resource.files?.[0]?.fileName || "No file attached"}
-              </a>
-                  </>
+                  <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
+                    {resource.title}
+                  </h1>
+
+                  <a
+                    href={resource.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-sm text-sky-600 font-medium hover:underline mb-1"
+                  >
+                    <Icon name="link" size="14px" />
+                    {resource.url || "No link available"}
+                  </a>
+                  <a
+                    className={`flex items-center gap-2 text-sm font-medium ${resource.files?.[0] ? "text-sky-600 hover:underline" : "text-gray-500"}`}
+                    target="_blank"
+                    href={resource.files?.[0]?.filePath}
+                  >
+                    <Icon name="file" size="14px" />
+                    {resource.files?.[0]?.fileName || "No file attached"}
+                  </a>
+                </>
               )}
             </div>
 
             <div className="flex gap-3">
+              <button
+                onClick={() => setIsEditing(true)}
+                className={`${isEditing ? 'cursor-default': 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
+                disabled={isEditing}
+              >
+                <Icon name="edit" size="20px" />
+              </button>
               <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                 <Icon name="share" size="20px" className="text-slate-600" />
               </button>
@@ -306,7 +324,7 @@ export default function ResourceDetail() {
               {/* Mapping Real Annotations */}
               {annotationCount > 0 ? (
                 annotations.map((note) => (
-                  <AnnotationCard                    
+                  <AnnotationCard
                     key={note._id}
                     user={note.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}

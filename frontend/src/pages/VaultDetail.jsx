@@ -108,7 +108,7 @@ export default function VaultDetail() {
                 <div
                   className="group overflow-hidden rounded-3xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm shadow-slate-200 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                 >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-4 ">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EAF4FF] text-[#0B3C5D] shadow-inner shadow-blue-50">
                     <Icon name="resource" size="24px" />
                   </div>
@@ -158,6 +158,7 @@ export default function VaultDetail() {
                     </span>
                   </div>
                 </div>
+                </div>
               </Link>
             ))
           ) : (
@@ -167,7 +168,7 @@ export default function VaultDetail() {
           {open && (
             <AddResourceForm 
                 vaultId={vaultId}
-                onResourceAdded={(newRes) => setResources([newRes, ...resources])}
+                onResourceAdded={setResources}
                 onClose={() => setOpen(false)}
             />
           )}

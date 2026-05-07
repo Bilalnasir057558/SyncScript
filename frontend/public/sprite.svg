@@ -62,7 +62,6 @@
     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </symbol>
 
-</svg>
   <symbol version="1.1" id="icon-file" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32">
     <polyline points="18,3 18,9 24,9 18,3 6,3 6,29 24,29 24,22 "></polyline>
     <line x1="24" y1="9" x2="24" y2="12"></line>
@@ -70,7 +69,5 @@
     <path d="M21,15l1.5-1.5c1.4-1.4,3.6-1.4,5,0l0,0c1.4,1.4,1.4,3.6,0,5L26,20"></path>
     <line x1="21" y1="20" x2="24" y2="17"></line>
   </symbol>
-
-
 </svg>
   

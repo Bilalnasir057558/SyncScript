@@ -15,10 +15,10 @@ export default function AnnotationCard({
           <Icon name="search" size="16px" />
         </div>
         <div>
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <h4 className="text-md font-bold text-gray-600 uppercase tracking-wider">
             {user}
           </h4>
-          <p className="tracking-wide text-[10px] text-slate-400">{date} • {time}</p>
+          <p className="tracking-wide text-xs text-gray-500">{date} • {time}</p>
         </div>
       </div>
       <div className="text-slate-600 leading-relaxed mb-4">

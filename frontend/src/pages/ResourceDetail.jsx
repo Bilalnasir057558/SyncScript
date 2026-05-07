@@ -44,7 +44,7 @@ export default function ResourceDetail() {
 
         setResource(resResource.data.data);
         setEditTitle(resResource.data.data.title);
-        setEditUrl(resResource.data.data.url || "");
+        setEditUrl(resResource.data.data.url || "");        
 
         setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
@@ -82,7 +82,7 @@ export default function ResourceDetail() {
         },
       );
       
-      const savedAnnotation = response.data.data;
+      const savedAnnotation = response.data.data;      
 
       setAnnotations((prev) =>
         prev.map((note) =>
@@ -242,9 +242,9 @@ export default function ResourceDetail() {
               {/* Mapping Real Annotations */}
               {annotationCount > 0 ? (
                 annotations.map((note) => (
-                  <AnnotationCard
+                  <AnnotationCard                    
                     key={note._id}
-                    user={note.userId?.username || "Researcher"}
+                    user={note.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
                     time={new Date(note.createdAt).toLocaleTimeString()}
                     text={note.content}

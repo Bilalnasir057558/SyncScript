@@ -98,7 +98,21 @@ export default function ResourceDetail() {
   } catch (err) {
     alert(err.response?.data?.message || "Update failed.");
   }
-};
+  };
+
+  const handleDelete = async () => {
+  if (window.confirm("Are you sure? This will permanently delete this resource and all its notes.")) {
+    try {
+      const response = await axiosInstance.delete(`/resources/${resourceId}`);
+      if (response.data.success) {
+        alert("Resource removed from archives.");
+        navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Remove failed.");
+    }
+  }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
@@ -121,15 +135,24 @@ export default function ResourceDetail() {
                     className="text-2xl font-bold text-[#0B3C5D] border-b border-sky-200 focus:outline-none"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Resource Title"
                   />
                   <input 
                     className="text-sm text-sky-600 focus:outline-none"
                     value={editUrl}
                     onChange={(e) => setEditUrl(e.target.value)}
+                    placeholder="Resource URL"
                   />
                   <div className="flex gap-2 mt-2">
                     <Button variant="blue" onClick={handleUpdate} className="py-1 px-4 text-xs">Save Changes</Button>
                     <Button variant="gray" onClick={() => setIsEditing(false)} className="py-1 px-4 text-xs">Cancel</Button>
+                    <button 
+                        onClick={handleDelete}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg"
+                    >
+                        <Icon name="trash" size="14px" className="rotate-180" /> {/* Reusing an icon temporarily, or use trash */}
+                        Remove Resource
+                    </button>
                   </div>
                 </div>
               ) : (

@@ -6,6 +6,7 @@ import { VaultMember } from "../models/vaultMember.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Vault } from "../models/vault.model.js";
+import { Annotation } from "../models/annotation.model.js";
 
 const formatFile = (file) => {
     if (!file) return null;
@@ -250,3 +251,40 @@ const updateResource = asyncHandler(async (req, res) => {
 });
 
 export { updateResource };
+
+const deleteResource = asyncHandler(async (req, res) => {
+    const { resourceId } = req.params;
+
+    // 1. Find the resource
+    const resource = await Resource.findById(resourceId);
+    if (!resource) {
+        throw new ApiError(404, "Resource not found.");
+    }
+
+    // 2. Authorization Check
+    // Only the creator of the resource or the Owner of the vault can delete
+    const isCreator = resource.createdBy.toString() === req.user._id.toString();
+    
+    const vault = await Vault.findById(resource.vaultId);
+    const isVaultOwner = vault?.createdBy.toString() === req.user._id.toString();
+
+    if (!isCreator && !isVaultOwner) {
+        throw new ApiError(403, "Access denied. Only the creator or vault owner can delete this resource.");
+    }
+
+    // 3. CASCADE DELETE: Remove linked data
+    // Delete all annotations associated with this resource
+    await Annotation.deleteMany({ resourceId });
+
+    // Delete the file records
+    await File.deleteMany({ resourceId });
+
+    // 4. Finally, delete the resource
+    await Resource.findByIdAndDelete(resourceId);
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Resource and all associated annotations deleted successfully.")
+    );
+});
+
+export { deleteResource };

@@ -125,7 +125,7 @@ export default function VaultDetail() {
                       ) : (
                         <span className="text-slate-500">No link attached</span>
                       )}
-                      {resource.files.length > 0 && (
+                      {resource.files?.length > 0 && (
                         <a
                           className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm hover:border-blue-300"
                           href={resource.files[0].filePath}

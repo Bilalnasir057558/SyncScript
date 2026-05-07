@@ -8,6 +8,7 @@ import Icon from "../components/Icon";
 import Button from "../components/Button";
 import { Editor } from "@tinymce/tinymce-react";
 import axiosInstance from "../api/axios";
+import { useAuth } from "../context/auth.context";
 
 export default function ResourceDetail() {
   const { resourceId } = useParams(); // Get ID from URL: /resource/:resourceId
@@ -19,6 +20,7 @@ export default function ResourceDetail() {
   const [resource, setResource] = useState(location.state?.resource || null);
   const [annotations, setAnnotations] = useState([]);
   const [loading, setLoading] = useState(!resource);
+  const {user} = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -55,7 +57,13 @@ export default function ResourceDetail() {
         setEditTitle(resResource.data.data.title);
         setEditUrl(resResource.data.data.url || "");
 
-        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
+
+        setAnnotations(
+          Array.isArray(resAnnotations.data.data)
+            ? resAnnotations.data.data
+            : [],
+        );        
+        
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -78,6 +86,8 @@ export default function ResourceDetail() {
     const tempAnnotation = {
       _id: tempId,
       content: noteText,
+      username: user?.username,
+      createdAt: new Date().toLocaleDateString(),
       status: "saving",
       createdAt: new Date(),
       username: "You",
@@ -175,6 +185,24 @@ export default function ResourceDetail() {
     }
   };
 
+  const handleDelete = async () => {
+    if (
+      window.confirm(
+        "Are you sure? This will permanently delete this resource and all its notes.",
+      )
+    ) {
+      try {
+        const response = await axiosInstance.delete(`/resources/${resourceId}`);
+        if (response.data.success) {
+          alert("Resource removed from archives.");
+          navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+        }
+      } catch (err) {
+        alert(err.response?.data?.message || "Remove failed.");
+      }
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
       <SideMenu
@@ -252,6 +280,13 @@ export default function ResourceDetail() {
             </div>
 
             <div className="flex gap-3">
+              <button
+                onClick={() => setIsEditing(true)}
+                className={`${isEditing ? 'cursor-default': 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
+                disabled={isEditing}
+              >
+                <Icon name="edit" size="20px" />
+              </button>
               <button className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
                 <Icon name="share" size="20px" className="text-slate-600" />
               </button>

@@ -54,6 +54,14 @@
     <path d="M4 14H11V12H4V14ZM4 10H14V8H4V10ZM4 6H14V4H4V6ZM2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H16C16.55 0 17.0208 0.195833 17.4125 0.5875C17.8042 0.979167 18 1.45 18 2V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2ZM2 16H16V2H2V16ZM2 2V16V2Z" fill="#006492"></path>
   </symbol>
 
+  <symbol fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="icon-edit">
+    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+  </symbol>
+
+  <symbol fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="icon-trash">
+    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
   <symbol version="1.1" id="icon-file" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 32 32">
     <polyline points="18,3 18,9 24,9 18,3 6,3 6,29 24,29 24,22 "></polyline>
     <line x1="24" y1="9" x2="24" y2="12"></line>
@@ -61,7 +69,5 @@
     <path d="M21,15l1.5-1.5c1.4-1.4,3.6-1.4,5,0l0,0c1.4,1.4,1.4,3.6,0,5L26,20"></path>
     <line x1="21" y1="20" x2="24" y2="17"></line>
   </symbol>
-
-
 </svg>
   

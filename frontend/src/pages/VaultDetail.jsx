@@ -1,8 +1,9 @@
-import { Link, useLocation, useParams } from "react-router";
+import { Link, useLocation, useParams, useNavigate } from "react-router";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
 import MobileNav from "../components/MobileNav";
-import SideMenu from "../components/Sidemenu";
+import SideMenu from "../components/SideMenu";
+import HeaderNavbar from "../components/HeaderNavbar";
 import axiosInstance from "../api/axios";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -11,6 +12,7 @@ import AddResourceForm from "../components/AddResourceForm";
 export default function VaultDetail() {
   const { vaultId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Initialize state with the passed data (if exists)
   const [vault, setVault] = useState(location.state?.vault || null);
@@ -20,6 +22,13 @@ export default function VaultDetail() {
   const [resources, setResources] = useState([]);
   const [open, setOpen] = useState(false);
 
+  const [activeSection, setActiveSection] = useState("My Vaults");
+  useEffect(() => {
+    if (activeSection !== "My Vaults") {
+      navigate("/dashboard");
+    }
+  }, [activeSection, navigate]);
+ 
   useEffect(() => {
     const fetchVaultAndResources = async () => {
       try {
@@ -58,10 +67,13 @@ export default function VaultDetail() {
   if (!vault) return <p>Vault not found.</p>;
 
   return (
-    <div className="min-h-screen bg-white">
-      <SideMenu />
+    <div className="flex min-h-screen bg-white">
+      <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} />
 
-      <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
+      <div className="grow flex flex-col min-w-0">
+      <HeaderNavbar />
+
+      <main className="grow mt-16 ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 transition-all duration-200">
         <div className="flex flex-col justify-center gap-2 mb-8">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#0B3C5D]">
             {vault.name}
@@ -89,7 +101,7 @@ export default function VaultDetail() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 mt-8 w-full lg:w-2/3">
+        <div className="flex flex-col gap-6 mt-8 w-full lg:w-3/4 xl:w-2/3">
           {resources.length > 0 ? (
             resources.map((resource) => (
               <div key={resource.id}>
@@ -158,15 +170,16 @@ export default function VaultDetail() {
           )}
 
           {open && (
-            <AddResourceForm
-              vaultId={vaultId}
-              onResourceAdded={setResources}
-              onClose={() => setOpen(false)}
+            <AddResourceForm 
+                vaultId={vaultId}
+                onResourceAdded={setResources}
+                onClose={() => setOpen(false)}
             />
           )}
         </div>
       </main>
-      <MobileNav />
+      </div>
+      <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} />
     </div>
   );
 }

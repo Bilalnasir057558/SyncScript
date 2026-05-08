@@ -58,12 +58,7 @@ export default function ResourceDetail() {
         setEditUrl(resResource.data.data.url || "");
 
 
-        setAnnotations(
-          Array.isArray(resAnnotations.data.data)
-            ? resAnnotations.data.data
-            : [],
-        );        
-        
+        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -84,7 +79,7 @@ export default function ResourceDetail() {
     const tempId = `temp-${Date.now()}`;
 
     const tempAnnotation = {
-      _id: tempId,
+      id: tempId,
       content: noteText,
       username: user?.username,
       createdAt: new Date().toLocaleDateString(),
@@ -103,21 +98,11 @@ export default function ResourceDetail() {
         },
       );
 
-      const savedAnnotation = {
-        ...response.data.data,
-        username:
-          response.data.data.username ||
-          response.data.data.userId?.username ||
-          "You",
-      };
-
-      setAnnotations((prev) =>
-        prev.map((note) =>
-          note._id === tempId
-            ? { ...savedAnnotation, status: "saved" }
-            : note
-        )
+      const annotationRes = await axiosInstance.get(
+        `/resources/${resourceId}/annotations`
       );
+
+      setAnnotations(annotationRes.data.data || []);
 
       setNoteText("");
       alert("Annotation synced to sanctuary!");
@@ -151,7 +136,7 @@ export default function ResourceDetail() {
       await axiosInstance.delete(`/annotations/${annotationId}`);
 
       setAnnotations((prev) =>
-        prev.filter((note) => note._id !== annotationId)
+        prev.filter((note) => note.id !== annotationId)
       );
 
       alert("Annotation deleted successfully.");
@@ -163,7 +148,7 @@ export default function ResourceDetail() {
 
   const handleEdit = async (annotationId, updatedContent) => {
     try {
-      const response = await axiosInstance.put(
+      await axiosInstance.put(
         `/annotations/${annotationId}`,
         {
           content: updatedContent,
@@ -172,8 +157,11 @@ export default function ResourceDetail() {
 
       setAnnotations((prev) =>
         prev.map((note) =>
-          note._id === annotationId
-            ? response.data.data
+          note.id === annotationId
+            ? {
+              ...note,
+              content: updatedContent,
+            }
             : note
         )
       );
@@ -363,15 +351,15 @@ export default function ResourceDetail() {
               {annotationCount > 0 ? (
                 annotations.map((note) => (
                   <AnnotationCard
-                    key={note._id || note.id}
+                    key={note.id || note._id}
                     user={note.username || "Researcher"}
                     date={new Date(note.createdAt).toLocaleDateString()}
                     time={new Date(note.createdAt).toLocaleTimeString()}
                     text={note.content}
                     canEdit={true}
-                    onDelete={() => handleDelete(note._id)}
+                    onDelete={() => handleDelete(note.id)}
                     onEdit={(updatedText) =>
-                      handleEdit(note._id, updatedText)
+                      handleEdit(note.id, updatedText)
                     }
                   />
                 ))

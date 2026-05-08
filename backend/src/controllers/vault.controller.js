@@ -317,8 +317,7 @@ const deleteVault = asyncHandler(async (req, res) => {
     );
 })
 
-const inviteVaultMember = asyncHandler(async (req, res) => {
-    
+const inviteVaultMember = asyncHandler(async (req, res) => {   
     const userId = req.user._id;
     const {invitedEmail, role} = req.body;
     const {vaultId} = req.params;
@@ -462,6 +461,43 @@ const acceptInvitation = asyncHandler(async (req, res) => {
 
 })
 
+const rejectInvitation = asyncHandler(async (req, res) => {
+
+    const {token} = req.params;
+    const userId = req.user._id;
+
+    const invitation = await Invitation.findOne({token});
+    if(!invitation) {
+        throw new ApiError(404, 'Invitation not found.');
+    }
+
+    const user = await User.findById(userId);
+    if(user.email !== invitation.invitedEmail) {
+        throw new ApiError(403, 'This invitation is for a different email');
+    }
+
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    invitation.status = 'rejected';
+    await invitation.save();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            {},
+            'Invitation rejected'
+        )
+    );
+})
+
+const cancelInvitation = asyncHandler(async (req, res) => {
+
+})
+
 export {
     createVault,
     getUserVaults,
@@ -469,5 +505,7 @@ export {
     updateVault,
     deleteVault,
     inviteVaultMember,
-    acceptInvitation
+    acceptInvitation,
+    rejectInvitation,
+    cancelInvitation
 }

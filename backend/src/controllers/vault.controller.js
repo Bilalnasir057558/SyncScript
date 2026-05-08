@@ -494,8 +494,33 @@ const rejectInvitation = asyncHandler(async (req, res) => {
     );
 })
 
+// owner can cancel before acceptance
 const cancelInvitation = asyncHandler(async (req, res) => {
+    const {vaultId, invitationId} = req.params;
+    const userId = req.user._id;
 
+    // check vault owner
+    const vault = await Vault.findById(vaultId);
+    if(vault.createdBy.toString() !== userId.toString()) {
+        throw new ApiError(403, 'Only vault owner can cancel invitations');
+    }
+
+    const invitation = await Invitation.findById(invitationId);
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    await Invitation.findByIdAndDelete(invitationId);
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            'Invitation cancelled'
+        )
+    );
 })
 
 export {

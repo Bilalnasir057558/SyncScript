@@ -24,3 +24,5 @@ router.route('/:vaultId/invitations/:invitationId').delete(
     verifyJWT,
     cancelInvitation
 )
+
+export default router

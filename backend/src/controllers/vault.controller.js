@@ -323,11 +323,11 @@ const inviteVaultMember = asyncHandler(async (req, res) => {
     const {vaultId} = req.params;
 
     // validation
-    if(!invitedEmail || (typeof invitedEmail === 'string' && !invitedEmail.trim())){
+    if(!invitedEmail || !invitedEmail.trim()){
         throw new ApiError(400, 'Email is required.');
     }
 
-    if(!role || !['owner', 'contributor', 'viewer'].includes(role.toLowerCase())) {
+    if(!role || !['Owner', 'Contributor', 'Viewer'].includes(role)) {
         throw new ApiError(400, 'Valid role is required.');
     }
 
@@ -344,6 +344,11 @@ const inviteVaultMember = asyncHandler(async (req, res) => {
 
     // check if email is already a member
     const existingMember = await User.findOne({email: invitedEmail})
+
+    if(!existingMember) {
+        throw new ApiError(400, 'User is not registered.');
+    }
+    
     if(existingMember) {
         const isMember = await VaultMember.findOne({
             userId: existingMember._id,
@@ -375,7 +380,7 @@ const inviteVaultMember = asyncHandler(async (req, res) => {
         role,
         invitedBy: userId,
         token,
-        status: 'pending'
+        status: 'pending',
     });
 
     // send email
@@ -411,11 +416,15 @@ const acceptInvitation = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     // find invitation by token
-    const invitation = await Invitation.findOne({token});
+    const invitation = await Invitation.findOne({
+        token: token
+    });
+    console.log(invitation);
+    
     if(!invitation) {
         throw new ApiError(404, 'Invalid invitation link');
     }
-
+       
     // check if expired
     if(new Date() > invitation.expiresAt) {
         // delete record

@@ -406,11 +406,68 @@ const inviteVaultMember = asyncHandler(async (req, res) => {
     )
 })
 
+const acceptInvitation = asyncHandler(async (req, res) => {
+
+    const {token} = req.params;
+    const userId = req.user._id;
+
+    // find invitation by token
+    const invitation = await Invitation.findOne({token});
+    if(!invitation) {
+        throw new ApiError(404, 'Invalid invitation link');
+    }
+
+    // check if expired
+    if(new Date() > invitation.expiresAt) {
+        // delete record
+        await Invitation.deleteOne({ _id: invitation._id });
+        throw new ApiError(400, 'Invitation has expired');
+    }
+
+    // check if already accepted
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    // verify that the logged-in user's email matches
+    const user = await User.findById(userId);
+    if(user.email !== invitation.invitedEmail) {
+        throw new ApiError(403, 'This invitation is for a different email address');
+    }
+
+    // create vault member entry
+    const vaultMember = await VaultMember.create({
+        userId,
+        vaultId: invitation.vaultId,
+        role: invitation.role,
+        addedAt: new Date()
+    });
+
+    // update status of invitation
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(
+            201,
+            {
+                vaultId: invitation.vaultId,
+                role: invitation.role
+            },
+            'Invitation accepted! You are now a member of the vault'
+        )
+    );
+
+})
+
 export {
     createVault,
     getUserVaults,
     getVaultById,
     updateVault,
     deleteVault,
-    inviteVaultMember
+    inviteVaultMember,
+    acceptInvitation
 }

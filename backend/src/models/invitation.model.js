@@ -14,7 +14,7 @@ const invitationSchema = new mongoose.Schema({
     invitedEmail: {
         type: String,
         required: true,
-        lower: true
+        lowercase: true
     },
     role: {
         type: String,
@@ -32,7 +32,7 @@ const invitationSchema = new mongoose.Schema({
     },
     expiresAt: {
         type: Date,
-        default: () => new Date(Date.now + 7 * 24 * 60 * 60 * 1000)
+        default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     },
     createdAt: {
         type: Date,

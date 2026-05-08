@@ -173,23 +173,7 @@ export default function ResourceDetail() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        "Are you sure? This will permanently delete this resource and all its notes.",
-      )
-    ) {
-      try {
-        const response = await axiosInstance.delete(`/resources/${resourceId}`);
-        if (response.data.success) {
-          alert("Resource removed from archives.");
-          navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
-        }
-      } catch (err) {
-        alert(err.response?.data?.message || "Remove failed.");
-      }
-    }
-  };
+  
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">

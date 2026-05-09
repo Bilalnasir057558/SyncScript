@@ -6,7 +6,6 @@ import axiosInstance from "../api/axios";
 export default function AcceptInvitePage() {
   const { token } = useParams();
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const navigate = useNavigate();
 
@@ -33,12 +32,6 @@ export default function AcceptInvitePage() {
     } catch(err) {
         setError(err.response?.data?.message || "Failed to reject invitation")
     }
-  }
-
-  if(loading) {
-    return <div className="flex items-center justify-center h-screen">
-        Loading...
-    </div>
   }
 
   return (

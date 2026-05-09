@@ -2,6 +2,8 @@ import { useState } from "react";
 import Icon from "./Icon";
 import Button from "./Button";
 import axiosInstance from "../api/axios";
+import { useAuth } from "../context/auth.context";
+
 
 export default function InviteMemberForm({ vault, onInviteSent, onClose }) {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ export default function InviteMemberForm({ vault, onInviteSent, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const {user} = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,7 +135,7 @@ existing files, but cannot delete the vault or manage other members.</p>
 
           <div className="flex gap-3 justify-center items-center mb-5">
             <Icon name="user" size="16px"/>
-            <p className="flex-1">You (Bilal Nasir)</p>
+            <p className="flex-1">You ({user.fullName})</p>
             <div className="bg-gray-200 rounded text-gray-700 w-15 h-8 flex justify-center items-center font-semibold">
               Owner
             </div>

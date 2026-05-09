@@ -5,7 +5,7 @@ import { acceptInvitation, cancelInvitation, inviteVaultMember, rejectInvitation
 
 const router = Router();
 
-router.route('/:vaultId/invite').post(
+router.route('/vaults/:vaultId/invite').post(
     verifyJWT,
     inviteVaultMember
 )

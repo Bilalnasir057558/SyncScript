@@ -3,7 +3,7 @@ import Icon from "./Icon";
 import Button from "./Button";
 import axiosInstance from "../api/axios";
 
-export default function InviteMemberForm({ vaultId, onInviteSent, onClose }) {
+export default function InviteMemberForm({ vault, onInviteSent, onClose }) {
   const [formData, setFormData] = useState({
     email: "",
     role: "Viewer",
@@ -25,16 +25,23 @@ export default function InviteMemberForm({ vaultId, onInviteSent, onClose }) {
         return;
       }
 
-      const res = await axiosInstance.post(`/vaults/${vaultId}/invite`, {
+      console.log(vault);
+      
+      const res = await axiosInstance.post(`/vaults/${vault.id}/invite`, {
         invitedEmail: formData.email,
         role: formData.role,
       });
 
+      const newInvitation = res.data.data;
+
       setSuccess(res.data.message);
       setFormData({ email: "", role: "Viewer" });
 
-      if (onInviteSent) onInviteSent();
+      if (onInviteSent) onInviteSent(prev => [newInvitation, ...prev]);
+
+      setTimeout(() => onClose(), 3000)
     } catch (error) {
+
       setError(error.response?.data?.message || "Failed to send invitation");
     } finally {
       setLoading(false);
@@ -42,7 +49,7 @@ export default function InviteMemberForm({ vaultId, onInviteSent, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 min-h-screen bg-black/30 backdrop-blur-sm flex flex-col justify-center items-center p-10">
+    <div className="fixed inset-0 z-50 lg:min-h-screen bg-black/30 backdrop-blur-xs flex flex-col justify-center items-center p-10">
       <div className="w-md md:w-lg max-w-lg bg-white rounded-xl relative p-5">
         <div className="flex justify-between mb-5">
           <h1 className="text-xl text-[#00263F] font-bold">Share Vault</h1>
@@ -69,13 +76,13 @@ export default function InviteMemberForm({ vaultId, onInviteSent, onClose }) {
         <p className="text-[#42474E] text-sm">
           Invite colleagues to collaborate on{" "}
           <span className="text-[#00263F] font-semibold">
-            Advanced Quantum Cryptography
+            {vault.name}
           </span>
           . Collaborators will receive an email invitation.
         </p>
 
-        <form className="mt-7">
-          <div className="flex gap-3 mb-5">
+        <form onSubmit={handleSubmit} className="mt-7">
+          <div className="flex flex-col md:flex-row md:gap-3 mb-5">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 EMAIL ADDRESS
@@ -84,21 +91,25 @@ export default function InviteMemberForm({ vaultId, onInviteSent, onClose }) {
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
+                {
+                  setError('');
+                  setSuccess('');
                   setFormData({ ...formData, email: e.target.value })
                 }
+                }
                 placeholder="researcher@university.edu"
-                className="bg-gray-300 py-2 px-4 rounded-lg focus:outline-none w-65"
+                className="bg-gray-300 py-2 px-4 rounded-lg focus:outline-none w-full"
                 required
               />
             </div>
 
-            <div className="flex-1 mt-5.75">
+            <div className="mt-5.75">
               <select
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
                 }
-                className="bg-gray-300 py-2 px-4 rounded-lg focus:outline-none text-[#00263F] font-semibold w-33"
+                className="bg-gray-300 py-2 px-4 rounded-lg focus:outline-none text-[#00263F] font-semibold"
               >
                 <option value="Viewer">Viewer</option>
                 <option value="Contributor">Contributor</option>
@@ -129,7 +140,7 @@ existing files, but cannot delete the vault or manage other members.</p>
 
           <div className="flex justify-end gap-2">
             <Button onClick={onClose} children="Cancel" variant="gray" />
-            <Button onClick={handleSubmit} children="Invite" variant="blue" />
+            <Button disabled={loading} type="submit" children={`${loading ? 'Sending...': 'Invite'}`} variant="blue" />
           </div>
         </form>
       </div>

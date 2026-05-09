@@ -62,8 +62,6 @@ function App() {
             <ResourceDetail />
           </ProtectedRoute>
         }/>
-
-        <Route path='/invite' element={<InviteMemberForm />}/>
       
     </Routes>
 

@@ -8,6 +8,7 @@ import axiosInstance from "../api/axios";
 import { useState } from "react";
 import { useEffect } from "react";
 import AddResourceForm from "../components/AddResourceForm";
+import InviteMemberForm from "../components/InviteMemberForm";
 
 export default function VaultDetail() {
   const { vaultId } = useParams();
@@ -21,6 +22,8 @@ export default function VaultDetail() {
 
   const [resources, setResources] = useState([]);
   const [open, setOpen] = useState(false);
+  const [shareFormOpen, setShareFormOpen] = useState(false);
+  const [invitations, setInvitations] = useState([]);
 
   const [activeSection, setActiveSection] = useState("My Vaults");
   useEffect(() => {
@@ -83,6 +86,7 @@ export default function VaultDetail() {
             <p className="text-gray-700 lg:max-w-[50%]">{vault.description}</p>
             <div className="flex gap-2">
               <Button
+                onClick={() => setShareFormOpen(true)}
                 variant="gray"
                 className="text-black font-semibold flex justify-center items-center gap-2 tracking-wider shadow-md shadow-gray-200"
               >
@@ -172,6 +176,14 @@ export default function VaultDetail() {
                 vaultId={vaultId}
                 onResourceAdded={setResources}
                 onClose={() => setOpen(false)}
+            />
+          )}
+
+          {shareFormOpen && (
+            <InviteMemberForm 
+              vault={vault}
+              onClose={() => setShareFormOpen(false)}
+              onInviteSent={setInvitations}
             />
           )}
         </div>

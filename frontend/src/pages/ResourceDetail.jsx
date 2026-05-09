@@ -20,7 +20,7 @@ export default function ResourceDetail() {
   const [resource, setResource] = useState(location.state?.resource || null);
   const [annotations, setAnnotations] = useState([]);
   const [loading, setLoading] = useState(!resource);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -84,8 +84,6 @@ export default function ResourceDetail() {
       username: user?.username,
       createdAt: new Date().toLocaleDateString(),
       status: "saving",
-      createdAt: new Date(),
-      username: "You",
     };
 
     setAnnotations((prev) => [tempAnnotation, ...prev]);
@@ -98,11 +96,13 @@ export default function ResourceDetail() {
         },
       );
 
-      const annotationRes = await axiosInstance.get(
-        `/resources/${resourceId}/annotations`
-      );
+      const savedAnnotation = response.data.data;
 
-      setAnnotations(annotationRes.data.data || []);
+      setAnnotations((prev) =>
+        prev.map((note) =>
+          note.id === tempId ? { ...savedAnnotation, username: user?.username, status: "saved" } : note,
+        ),
+      );
 
       setNoteText("");
       alert("Annotation synced to sanctuary!");
@@ -131,7 +131,39 @@ export default function ResourceDetail() {
 
   const annotationCount = Array.isArray(annotations) ? annotations.length : 0;
 
-  const handleDelete = async (annotationId) => {
+  const handleUpdate = async () => {
+    try {
+      const response = await axiosInstance.patch(`/resources/${resourceId}`, {
+        title: editTitle,
+        url: editUrl,
+      });
+      setResource(response.data.data);
+      setIsEditing(false);
+      alert("Archival data updated.");
+    } catch (err) {
+      alert(err.response?.data?.message || "Update failed.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (
+      window.confirm(
+        "Are you sure? This will permanently delete this resource and all its notes.",
+      )
+    ) {
+      try {
+        const response = await axiosInstance.delete(`/resources/${resourceId}`);
+        if (response.data.success) {
+          alert("Resource removed from archives.");
+          navigate(`/vault/${resource.vaultId}`); // Redirect back to parent vault
+        }
+      } catch (err) {
+        alert(err.response?.data?.message || "Remove failed.");
+      }
+    }
+  };
+
+  const handleDeleteAnnotation = async (annotationId) => {
     try {
       await axiosInstance.delete(`/annotations/${annotationId}`);
 
@@ -146,7 +178,7 @@ export default function ResourceDetail() {
     }
   };
 
-  const handleEdit = async (annotationId, updatedContent) => {
+  const handleEditAnnotation = async (annotationId, updatedContent) => {
     try {
       await axiosInstance.put(
         `/annotations/${annotationId}`,
@@ -173,7 +205,7 @@ export default function ResourceDetail() {
     }
   };
 
-  
+
 
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
@@ -223,12 +255,6 @@ export default function ResourceDetail() {
                     <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
                       {resource.title}
                     </h1>
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="p-2 text-slate-400 hover:text-sky-600 transition-colors"
-                    >
-                      <Icon name="edit" size="18px" />
-                    </button>
                   </div>
                   <a
                     href={resource.url}
@@ -254,7 +280,7 @@ export default function ResourceDetail() {
             <div className="flex gap-3">
               <button
                 onClick={() => setIsEditing(true)}
-                className={`${isEditing ? 'cursor-default': 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
+                className={`${isEditing ? 'cursor-default' : 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
                 disabled={isEditing}
               >
                 <Icon name="edit" size="20px" />
@@ -333,20 +359,24 @@ export default function ResourceDetail() {
 
               {/* Mapping Real Annotations */}
               {annotationCount > 0 ? (
-                annotations.map((note) => (
-                  <AnnotationCard
-                    key={note.id || note._id}
-                    user={note.username || "Researcher"}
-                    date={new Date(note.createdAt).toLocaleDateString()}
-                    time={new Date(note.createdAt).toLocaleTimeString()}
-                    text={note.content}
-                    canEdit={true}
-                    onDelete={() => handleDelete(note.id)}
-                    onEdit={(updatedText) =>
-                      handleEdit(note.id, updatedText)
-                    }
-                  />
-                ))
+                annotations.map((note) => {
+                  const annotationId = note._id || note.id;
+
+                  return (
+                    <AnnotationCard
+                      key={annotationId}
+                      user={note.username || "Researcher"}
+                      date={new Date(note.createdAt).toLocaleDateString()}
+                      time={new Date(note.createdAt).toLocaleTimeString()}
+                      text={note.content}
+                      canEdit={true}
+                      onDelete={() => handleDeleteAnnotation(annotationId)}
+                      onEdit={(updatedText) =>
+                        handleEditAnnotation(annotationId, updatedText)
+                      }
+                    />
+                  );
+                })
               ) : (
                 <p className="text-gray-400 col-span-3 text-center border-2 border-dashed rounded-xl p-5">
                   No annotations yet.

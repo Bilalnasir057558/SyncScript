@@ -9,6 +9,7 @@ import { Routes, Route } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import InviteMemberForm from './components/InviteMemberForm';
 
 function App() {
   return (
@@ -61,6 +62,8 @@ function App() {
             <ResourceDetail />
           </ProtectedRoute>
         }/>
+
+        <Route path='/invite' element={<InviteMemberForm />}/>
       
     </Routes>
 

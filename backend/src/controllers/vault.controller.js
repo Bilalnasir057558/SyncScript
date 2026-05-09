@@ -503,6 +503,67 @@ const rejectInvitation = asyncHandler(async (req, res) => {
     );
 })
 
+// for owner
+const getVaultInvitations = asyncHandler(async (req, res) => {
+    const {vaultId} = req.params;
+    const userId = req.user._id;
+
+    const vault = await Vault.findById(vaultId);
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found.');
+    }
+    const isVaultOwner = vault.createdBy.toString() === userId.toString();
+    if(!isVaultOwner) {
+        throw new ApiError(403, 'Only vault owner can view invitations.');
+    }
+
+    const invitations = await Invitation.find({
+        vaultId,
+        status: 'pending'
+    });
+
+    if(invitations.length === 0) {
+        throw new ApiError(404, 'No invitations found.')
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            invitations,
+            'Vault invitations retrieved'
+        )
+    )
+});
+
+// for logged-in user
+const getPendingInvitations = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if(!user) {
+        throw new ApiError(400, 'Unauthorized request');
+    }
+
+    const invitations = await Invitation.find({
+        invitedEmail: user.email,
+        status: 'pending'
+    })
+    .populate('vaultId', 'name description')
+    .populate('invitedBy', 'username email')
+    .lean();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            invitations,
+            'Pending invitations retrieved'
+        )
+    )
+})
+
 // owner can cancel before acceptance
 const cancelInvitation = asyncHandler(async (req, res) => {
     const {vaultId, invitationId} = req.params;
@@ -541,5 +602,7 @@ export {
     inviteVaultMember,
     acceptInvitation,
     rejectInvitation,
-    cancelInvitation
+    cancelInvitation,
+    getVaultInvitations,
+    getPendingInvitations
 }

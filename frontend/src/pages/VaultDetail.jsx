@@ -8,6 +8,7 @@ import axiosInstance from "../api/axios";
 import { useState } from "react";
 import { useEffect } from "react";
 import AddResourceForm from "../components/AddResourceForm";
+import InviteMemberForm from "../components/InviteMemberForm";
 
 export default function VaultDetail() {
   const { vaultId } = useParams();
@@ -21,6 +22,8 @@ export default function VaultDetail() {
 
   const [resources, setResources] = useState([]);
   const [open, setOpen] = useState(false);
+  const [shareFormOpen, setShareFormOpen] = useState(false);
+  const [invitations, setInvitations] = useState([]);
 
   const [activeSection, setActiveSection] = useState("My Vaults");
   useEffect(() => {
@@ -71,33 +74,33 @@ export default function VaultDetail() {
       <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} />
 
       <div className="grow flex flex-col min-w-0">
-        <HeaderNavbar />
+      <HeaderNavbar />
 
-        <main className="grow mt-16 ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 transition-all duration-200">
-          <div className="flex flex-col justify-center gap-2 mb-8">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#0B3C5D]">
-              {vault.name}
-            </h2>
+      <main className="grow mt-16 ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 transition-all duration-200">
+        <div className="flex flex-col justify-center gap-2 mb-8">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#0B3C5D]">
+            {vault.name}
+          </h2>
 
-            <div className="flex flex-col lg:flex-row gap-4 md:justify-between">
-              <p className="text-gray-700 lg:max-w-[50%]">{vault.description}</p>
-              <div className="flex gap-2">
-                <Button
-                  variant="gray"
-                  className="text-black font-semibold flex justify-center items-center gap-2 tracking-wider shadow-md shadow-gray-200"
-                >
-                  <Icon name="share" size="16px" />
-                  Share
-                </Button>
-                <Button
-                  disabled={role === "Viewer"}
-                  onClick={() => setOpen(true)}
-                  className={`flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200 ${role === "Viewer" ? "bg-gray-300 text-black tracking-wider font-semibold hover:bg-gray-300 hover:cursor-default hover:scale-none" : ""}`}
-                >
-                  <Icon name="add" size="16px" />
-                  Add Resource
-                </Button>
-              </div>
+          <div className="flex flex-col lg:flex-row gap-4 md:justify-between">
+            <p className="text-gray-700 lg:max-w-[50%]">{vault.description}</p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShareFormOpen(true)}
+                variant="gray"
+                className="text-black font-semibold flex justify-center items-center gap-2 tracking-wider shadow-md shadow-gray-200"
+              >
+                <Icon name="share" size="16px" />
+                Share
+              </Button>
+              <Button
+                disabled={role === "Viewer"}
+                onClick={() => setOpen(true)}
+                className={`flex justify-center items-center gap-2 tracking-wider shadow-md shadow-slate-200 ${role === "Viewer" ? "bg-gray-300 text-black tracking-wider font-semibold hover:bg-gray-300 hover:cursor-default hover:scale-none" : ""}`}
+              >
+                <Icon name="add" size="16px" />
+                Add Resource
+              </Button>
             </div>
           </div>
 
@@ -172,10 +175,18 @@ export default function VaultDetail() {
                 vaultId={vaultId}
                 onResourceAdded={setResources}
                 onClose={() => setOpen(false)}
-              />
-            )}
-          </div>
-        </main>
+            />
+          )}
+
+          {shareFormOpen && (
+            <InviteMemberForm 
+              vault={vault}
+              onClose={() => setShareFormOpen(false)}
+              onInviteSent={setInvitations}
+            />
+          )}
+        </div>
+      </main>
       </div>
       <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} />
     </div>

@@ -1,11 +1,15 @@
 import {asyncHandler} from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
+import { User } from "../models/user.model.js";
 import { Vault } from "../models/vault.model.js";
 import { VaultMember } from "../models/vaultMember.model.js";
 import { Resource } from "../models/resource.model.js";
 import { Annotation } from "../models/annotation.model.js";
 import { File } from "../models/file.model.js";
+import { Invitation } from "../models/invitation.model.js";
+import crypto from "crypto";
+import { sendEmailInvitation } from "../utils/emailService.js";
 
 const createVault = asyncHandler(async (req, res) => {
 
@@ -313,10 +317,292 @@ const deleteVault = asyncHandler(async (req, res) => {
     );
 })
 
+const inviteVaultMember = asyncHandler(async (req, res) => {   
+    const userId = req.user._id;
+    const {invitedEmail, role} = req.body;
+    const {vaultId} = req.params;
+
+    // validation
+    if(!invitedEmail || !invitedEmail.trim()){
+        throw new ApiError(400, 'Email is required.');
+    }
+
+    if(!role || !['Owner', 'Contributor', 'Viewer'].includes(role)) {
+        throw new ApiError(400, 'Valid role is required.');
+    }
+
+    const vault = await Vault.findById(vaultId);
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found');
+    }
+
+    // check if user is vault owner
+    const isVaultOwner = vault.createdBy.toString() === userId.toString();
+    if(!isVaultOwner) {
+        throw new ApiError(403, 'Only vault owner can invite members.');
+    }
+
+    // check if email is already a member
+    const existingMember = await User.findOne({email: invitedEmail})
+
+    if(!existingMember) {
+        throw new ApiError(400, 'User is not registered.');
+    }
+    
+    if(existingMember) {
+        const isMember = await VaultMember.findOne({
+            userId: existingMember._id,
+            vaultId
+        });
+
+        if(isMember) {
+            throw new ApiError(400, 'User is already a member of this vault.')
+        }
+    };
+
+    // check if invitation already exists
+    const existingInvite = await Invitation.findOne({
+        invitedEmail,
+        vaultId,
+        status: 'pending'
+    });
+    if(existingInvite) {
+        throw new ApiError(400, 'Invitation already sent to this email.');
+    }
+
+    // generate new token
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // create invitation record
+    const invitation = await Invitation.create({
+        vaultId,
+        invitedEmail,
+        role,
+        invitedBy: userId,
+        token,
+        status: 'pending',
+    });
+
+    // send email
+    const invitationLink = `${process.env.FRONTEND_URL}/accept-invite/${token}`;
+
+    await sendEmailInvitation(
+        invitedEmail,
+        vault.name,
+        req.user.username,
+        invitationLink
+    );
+
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(
+            201,
+            {
+                id: invitation._id,
+                invitedEmail: invitation.invitedEmail,
+                role: invitation.role,
+                status: invitation.status,
+                expiresAt: invitation.expiresAt
+            },
+            `Invitation sent to ${invitedEmail}`
+        )
+    )
+})
+
+const acceptInvitation = asyncHandler(async (req, res) => {
+
+    const {token} = req.params;
+    const userId = req.user._id;
+
+    // find invitation by token
+    const invitation = await Invitation.findOne({
+        token: token
+    });
+    console.log(invitation);
+    
+    if(!invitation) {
+        throw new ApiError(404, 'Invalid invitation link');
+    }
+       
+    // check if expired
+    if(new Date() > invitation.expiresAt) {
+        // delete record
+        await Invitation.deleteOne({ _id: invitation._id });
+        throw new ApiError(400, 'Invitation has expired');
+    }
+
+    // check if already accepted
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    // verify that the logged-in user's email matches
+    const user = await User.findById(userId);
+    if(user.email !== invitation.invitedEmail) {
+        throw new ApiError(403, 'This invitation is for a different email address');
+    }
+
+    // create vault member entry
+    const vaultMember = await VaultMember.create({
+        userId,
+        vaultId: invitation.vaultId,
+        role: invitation.role,
+        addedAt: new Date()
+    });
+
+    // update status of invitation
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(
+            201,
+            {
+                vaultId: invitation.vaultId,
+                role: invitation.role
+            },
+            'Invitation accepted! You are now a member of the vault'
+        )
+    );
+
+})
+
+const rejectInvitation = asyncHandler(async (req, res) => {
+
+    const {token} = req.params;
+    const userId = req.user._id;
+
+    const invitation = await Invitation.findOne({token});
+    if(!invitation) {
+        throw new ApiError(404, 'Invitation not found.');
+    }
+
+    const user = await User.findById(userId);
+    if(user.email !== invitation.invitedEmail) {
+        throw new ApiError(403, 'This invitation is for a different email');
+    }
+
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    invitation.status = 'rejected';
+    await invitation.save();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            {},
+            'Invitation rejected'
+        )
+    );
+})
+
+// for owner
+const getVaultInvitations = asyncHandler(async (req, res) => {
+    const {vaultId} = req.params;
+    const userId = req.user._id;
+
+    const vault = await Vault.findById(vaultId);
+    if(!vault) {
+        throw new ApiError(404, 'Vault not found.');
+    }
+    const isVaultOwner = vault.createdBy.toString() === userId.toString();
+    if(!isVaultOwner) {
+        throw new ApiError(403, 'Only vault owner can view invitations.');
+    }
+
+    const invitations = await Invitation.find({
+        vaultId,
+        status: 'pending'
+    });
+
+    if(invitations.length === 0) {
+        throw new ApiError(404, 'No invitations found.')
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            invitations,
+            'Vault invitations retrieved'
+        )
+    )
+});
+
+// for logged-in user
+const getPendingInvitations = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if(!user) {
+        throw new ApiError(400, 'Unauthorized request');
+    }
+
+    const invitations = await Invitation.find({
+        invitedEmail: user.email,
+        status: 'pending'
+    })
+    .populate('vaultId', 'name description')
+    .populate('invitedBy', 'username email')
+    .lean();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            invitations,
+            'Pending invitations retrieved'
+        )
+    )
+})
+
+// owner can cancel before acceptance
+const cancelInvitation = asyncHandler(async (req, res) => {
+    const {vaultId, invitationId} = req.params;
+    const userId = req.user._id;
+
+    // check vault owner
+    const vault = await Vault.findById(vaultId);
+    if(vault.createdBy.toString() !== userId.toString()) {
+        throw new ApiError(403, 'Only vault owner can cancel invitations');
+    }
+
+    const invitation = await Invitation.findById(invitationId);
+    if(invitation.status !== 'pending') {
+        throw new ApiError(400, `Invitation has already been ${invitation.status}`);
+    }
+
+    await Invitation.findByIdAndDelete(invitationId);
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            'Invitation cancelled'
+        )
+    );
+})
+
 export {
     createVault,
     getUserVaults,
     getVaultById,
     updateVault,
-    deleteVault
+    deleteVault,
+    inviteVaultMember,
+    acceptInvitation,
+    rejectInvitation,
+    cancelInvitation,
+    getVaultInvitations,
+    getPendingInvitations
 }

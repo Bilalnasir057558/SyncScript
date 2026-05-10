@@ -365,7 +365,7 @@ export default function ResourceDetail() {
                   return (
                     <AnnotationCard
                       key={annotationId}
-                      user={note.username || "Researcher"}
+                      user={user.username || "Researcher"}
                       date={new Date(note.createdAt).toLocaleDateString()}
                       time={new Date(note.createdAt).toLocaleTimeString()}
                       text={note.content}

@@ -48,14 +48,14 @@ function App() {
             <AddResourceForm />
           </ProtectedRoute>
         }/>
-      <Route
+      {/* <Route
         path='/vault/:vaultId'
         element={
           <ProtectedRoute>
             <VaultDetail />
           </ProtectedRoute>
         }
-      />
+      /> */}
       <Route 
         path='/resource/:resourceId' 
         element={

@@ -3,7 +3,7 @@ import Icon from "./Icon";
 import Button from "./Button";
 import { useNavigate } from "react-router";
 
-export default function SideMenu({ activeItem, setActiveItem }) {
+export default function SideMenu({ activeItem, setActiveItem , onNewResearch}) {
   const menuItems = [
     { name: "My Vaults", iconName: "vault" },
     { name: "Shared Vaults", iconName: "user" },
@@ -66,7 +66,7 @@ export default function SideMenu({ activeItem, setActiveItem }) {
         <Button
           variant="blue"
           className="w-full py-4 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider shadow-md shadow-slate-200"
-          onClick={() => navigate('/create-vault')}
+          onClick={onNewResearch}
         >
           <Icon name="add" size="16px" color="white" />
           New Research

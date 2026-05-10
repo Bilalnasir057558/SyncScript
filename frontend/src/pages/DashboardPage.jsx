@@ -93,7 +93,7 @@ export default function DashboardPage() {
           - ml-64 on desktop
           - pb-24 on mobile so content isn't hidden by the Bottom Nav
       */}
-      <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
+      <main className="grow mt-16 ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 transition-all duration-200">
         <header className="flex justify-between items-center mb-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#0B3C5D]">
             {activeSection}
@@ -135,38 +135,6 @@ export default function DashboardPage() {
 
           {activeSection === "My Vaults" && (
             <div
-              onClick={() => setOpen(true)}
-            >
-              <Icon name="create-vault" size="20px" />
-              Create Vault
-            </Button>
-          </header>
-
-          {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Dynamic Vaults */}
-            {displayVaults.length > 0 ? (
-              displayVaults.map((vault) => (
-                <Link
-                  key={vault.id}
-                  to={`/vaults/${vault.id}`}
-                  state={{ vault }}
-                >
-                  <VaultCard {...vault} />
-                </Link>
-              ))
-            ) : (
-              <p className="text-gray-400 col-span-3 text-center">
-                {activeSection === "My Vaults"
-                  ? "No vaults yet. Create one to get started!"
-                  : "No shared vaults yet."}
-              </p>
-            )}
-
-            {/* Start New Vault Card */}
-
-            {activeSection === "My Vaults" && (
-              <div
                 onClick={() => setOpen(true)}
                 className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-37 cursor-pointer hover:bg-gray-100 transition"
               >
@@ -174,8 +142,8 @@ export default function DashboardPage() {
                   <p className="text-2xl">+</p>
                   <p className="text-sm">Start New Vault</p>
                 </div>
-              </div>
-            )}
+            </div>
+          )}
           </div>
 
           {/* Modal */}

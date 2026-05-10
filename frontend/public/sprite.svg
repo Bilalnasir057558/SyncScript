@@ -69,5 +69,9 @@
     <path d="M21,15l1.5-1.5c1.4-1.4,3.6-1.4,5,0l0,0c1.4,1.4,1.4,3.6,0,5L26,20"></path>
     <line x1="21" y1="20" x2="24" y2="17"></line>
   </symbol>
+
+  <symbol fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="icon-logout">
+  <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" fill="currentColor"/>
+  </symbol>
 </svg>
   

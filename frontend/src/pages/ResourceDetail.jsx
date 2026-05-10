@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router";
-import SideMenu from "../components/Sidemenu";
+import SideMenu from '../components/Sidemenu';
 import Header from "../components/HeaderNavbar";
 import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";
@@ -20,7 +20,7 @@ export default function ResourceDetail() {
   const [resource, setResource] = useState(location.state?.resource || null);
   const [annotations, setAnnotations] = useState([]);
   const [loading, setLoading] = useState(!resource);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -58,12 +58,7 @@ export default function ResourceDetail() {
         setEditUrl(resResource.data.data.url || "");
 
 
-        setAnnotations(
-          Array.isArray(resAnnotations.data.data)
-            ? resAnnotations.data.data
-            : [],
-        );        
-        
+        setAnnotations(Array.isArray(resAnnotations.data.data) ? resAnnotations.data.data : []);
       } catch (error) {
         console.error("Failed to fetch resource details:", error);
       } finally {
@@ -101,7 +96,7 @@ export default function ResourceDetail() {
         },
       );
 
-      const savedAnnotation = response.data.data;      
+      const savedAnnotation = response.data.data;
 
       setAnnotations((prev) =>
         prev.map((note) =>
@@ -168,17 +163,64 @@ export default function ResourceDetail() {
     }
   };
 
+  const handleDeleteAnnotation = async (annotationId) => {
+    try {
+      await axiosInstance.delete(`/annotations/${annotationId}`);
+
+      setAnnotations((prev) =>
+        prev.filter((note) => note.id !== annotationId)
+      );
+
+      alert("Annotation deleted successfully.");
+    } catch (error) {
+      console.log(error);
+      alert("Delete failed");
+    }
+  };
+
+  const handleEditAnnotation = async (annotationId, updatedContent) => {
+    try {
+      await axiosInstance.put(
+        `/annotations/${annotationId}`,
+        {
+          content: updatedContent,
+        }
+      );
+
+      setAnnotations((prev) =>
+        prev.map((note) =>
+          note.id === annotationId
+            ? {
+              ...note,
+              content: updatedContent,
+            }
+            : note
+        )
+      );
+
+      alert("Annotation updated successfully.");
+    } catch (error) {
+      console.log(error);
+      alert("Update failed");
+    }
+  };
+
+
+
   return (
     <div className="flex min-h-screen bg-[#F7F9FC]">
-      <SideMenu activeItem={activeTab} setActiveItem={setActiveTab} />
+      <SideMenu
+        activeItem={activeTab}
+        setActiveItem={setActiveTab}
+      />
 
       <div className="grow flex flex-col">
         <Header />
 
         <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
           {/* Title and Header Actions */}
-          <div className="flex justify-between items-start mb-8 mt-16 gap-3">
-            <div className="max-w-3xl grow">
+          <div className="flex justify-between items-start mb-8 mt-16">
+            <div className="max-w-3xl flex-grow">
               {isEditing ? (
                 /* --- EDITING UI --- */
                 <div className="flex flex-col gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -195,25 +237,13 @@ export default function ResourceDetail() {
                     placeholder="Resource URL"
                   />
                   <div className="flex gap-2 mt-2">
-                    <Button
-                      variant="blue"
-                      onClick={handleUpdate}
-                      className="py-1 px-4 text-xs"
-                    >
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="gray"
-                      onClick={() => setIsEditing(false)}
-                      className="py-1 px-4 text-xs"
-                    >
-                      Cancel
-                    </Button>
+                    <Button variant="blue" onClick={handleUpdate} className="py-1 px-4 text-xs">Save Changes</Button>
+                    <Button variant="gray" onClick={() => setIsEditing(false)} className="py-1 px-4 text-xs">Cancel</Button>
                     <button
                       onClick={handleDelete}
-                      className="flex items-center gap-1.5 text-sm font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg cursor-pointer"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors p-2 rounded-lg"
                     >
-                      <Icon name="trash" size="16px" />
+                      <Icon name="trash" size="14px" />
                       Remove Resource
                     </button>
                   </div>
@@ -221,10 +251,11 @@ export default function ResourceDetail() {
               ) : (
                 /* --- DISPLAY UI --- */
                 <>
-                  <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
-                    {resource.title}
-                  </h1>
-
+                  <div className="flex items-center gap-3 mb-4">
+                    <h1 className="text-4xl font-extrabold text-[#0B3C5D] leading-tight">
+                      {resource.title}
+                    </h1>
+                  </div>
                   <a
                     href={resource.url}
                     target="_blank"
@@ -249,7 +280,7 @@ export default function ResourceDetail() {
             <div className="flex gap-3">
               <button
                 onClick={() => setIsEditing(true)}
-                className={`${isEditing ? 'cursor-default': 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
+                className={`${isEditing ? 'cursor-default' : 'cursor-pointer hover:text-sky-600'} p-3 text-slate-600  transition-colors border border-slate-200 rounded-xl`}
                 disabled={isEditing}
               >
                 <Icon name="edit" size="20px" />
@@ -328,15 +359,24 @@ export default function ResourceDetail() {
 
               {/* Mapping Real Annotations */}
               {annotationCount > 0 ? (
-                annotations.map((note) => (
-                  <AnnotationCard
-                    key={note._id}
-                    user={note?.username || "Researcher"}
-                    date={new Date(note.createdAt).toLocaleDateString()}
-                    time={new Date(note.createdAt).toLocaleTimeString()}
-                    text={note.content}
-                  />
-                ))
+                annotations.map((note) => {
+                  const annotationId = note._id || note.id;
+
+                  return (
+                    <AnnotationCard
+                      key={annotationId}
+                      user={user.username || "Researcher"}
+                      date={new Date(note.createdAt).toLocaleDateString()}
+                      time={new Date(note.createdAt).toLocaleTimeString()}
+                      text={note.content}
+                      canEdit={true}
+                      onDelete={() => handleDeleteAnnotation(annotationId)}
+                      onEdit={(updatedText) =>
+                        handleEditAnnotation(annotationId, updatedText)
+                      }
+                    />
+                  );
+                })
               ) : (
                 <p className="text-gray-400 col-span-3 text-center border-2 border-dashed rounded-xl p-5">
                   No annotations yet.

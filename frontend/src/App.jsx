@@ -5,12 +5,29 @@ import AddResourceForm from './components/AddResourceForm';
 import ResourceDetail from './pages/ResourceDetail';
 import CreateVaultModal from './components/CreateVault';
 import VaultDetail from './pages/VaultDetail';
-import { Routes, Route } from 'react-router';
+import { Routes, Route, useNavigate } from 'react-router';
 import Login from "./pages/Login";
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
 import InviteMemberForm from './components/InviteMemberForm';
 import AcceptInvitePage from './pages/AcceptInvitePage';
+import { createVault } from './api/vault.api';
+
+function CreateVaultRoute() {
+  const navigate = useNavigate();
+
+  const handleCreateVault = async (data) => {
+    await createVault(data);
+    navigate('/dashboard');
+  };
+
+  return (
+    <CreateVaultModal
+      onClose={() => navigate('/dashboard')}
+      onCreate={handleCreateVault}
+    />
+  );
+}
 
 function App() {
   return (
@@ -38,7 +55,7 @@ function App() {
         path='/create-vault' 
         element={
           <ProtectedRoute>
-            <CreateVaultModal />
+            <CreateVaultRoute />
           </ProtectedRoute>
         }/>
       <Route 

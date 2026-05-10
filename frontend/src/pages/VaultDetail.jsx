@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import AddResourceForm from "../components/AddResourceForm";
 import InviteMemberForm from "../components/InviteMemberForm";
+import CreateVaultModal from "../components/CreateVault";
 
 export default function VaultDetail() {
   const { vaultId } = useParams();
@@ -24,8 +25,49 @@ export default function VaultDetail() {
   const [open, setOpen] = useState(false);
   const [shareFormOpen, setShareFormOpen] = useState(false);
   const [invitations, setInvitations] = useState([]);
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
 
   const [activeSection, setActiveSection] = useState("My Vaults");
+
+  const handleCreateVault = async (data) => {
+      // create temporary vault (optimistic UI)
+      const tempId = `temp-${Date.now()}`;
+  
+      const tempVault = {
+        id: tempId,
+        name: data.name,
+        description: data.description,
+        resources: 0,
+        createdAt: new Date().toISOString().split("T")[0],
+        status: "saving",
+      };
+  
+      // update UI immediately using optimistic vault
+      setVaults((prev) => [tempVault, ...prev]);
+  
+      try {
+        const res = await createVault({
+          name: data.name,
+          description: data.description,
+        });
+        
+        const savedVault = res.data;
+        
+        // replace temp vault with real vault
+        setVaults((prev) =>
+          prev.map((vault) =>
+            vault.id === tempId ? { ...savedVault, status: "saved" } : vault,
+          ),
+        );
+      } catch (error) {
+        console.log(error);
+  
+        // Rollback if api fails
+        setVaults((prev) => prev.filter((vault) => vault.id !== tempId));
+        alert("Failed to save vault");
+      }
+    };
+
   useEffect(() => {
     if (activeSection !== "My Vaults") {
       navigate("/dashboard");
@@ -71,7 +113,7 @@ export default function VaultDetail() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} />
+      <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setIsVaultModalOpen(true)} />
 
       <div className="grow flex flex-col min-w-0">
         <HeaderNavbar />
@@ -193,11 +235,18 @@ export default function VaultDetail() {
                   onInviteSent={setInvitations}
                 />
               )}
+
+              {isVaultModalOpen && (
+                <CreateVaultModal 
+                  onClose={() => setIsVaultModalOpen(false)} 
+                  onCreate={handleCreateVault} // You'll need a handleCreateVault function here too
+                />
+              )}
             </div>
           </div>
         </main>
       </div>
-      <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} />
+      <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setIsVaultModalOpen(true)} />
     </div>
   );
 }

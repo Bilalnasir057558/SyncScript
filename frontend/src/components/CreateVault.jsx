@@ -6,36 +6,46 @@ export default function CreateVaultModal({ onClose, onCreate }) {
   const [vaultName, setVaultName] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!vaultName.trim()) {
       setError("Vault name is required");
       return;
     }
+
+    setIsCreating(true);
+    setError("");
 
     const vaultData = {
       name: vaultName,
       description: description,
     };
 
-    onCreate(vaultData); //  send data to Dashboard
+    try {
+      await onCreate(vaultData); // Wait for the creation to complete
 
-    setVaultName("");
-    setDescription("");
-    setError("");
+      setVaultName("");
+      setDescription("");
+      setError("");
 
-    onClose();
+      onClose();
+    } catch (error) {
+      setError("Failed to create vault. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={onClose}>
       
-      <div className="bg-white w-[400px] rounded-xl shadow-lg p-5 relative">
+      <div className="bg-white w-[400px] rounded-xl shadow-lg p-5 relative" onClick={(e) => e.stopPropagation()}>
 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500"
+          className="absolute top-3 right-3 text-gray-700 hover:text-gray-900 text-xl font-bold cursor-pointer"
         >
           ✕
         </button>
@@ -83,12 +93,12 @@ export default function CreateVaultModal({ onClose, onCreate }) {
 
         {/* Buttons */}
         <div className="flex justify-end gap-2 mt-5">
-          <Button variant="gray" onClick={onClose}>
+          <Button variant="gray" onClick={onClose} disabled={isCreating}>
             Cancel
           </Button>
 
-          <Button onClick={handleSubmit}>
-            Create Vault →
+          <Button onClick={handleSubmit} disabled={isCreating}>
+            {isCreating ? "Creating..." : "Create Vault →"}
           </Button>
         </div>
       </div>

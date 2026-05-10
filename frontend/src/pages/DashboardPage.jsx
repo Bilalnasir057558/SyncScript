@@ -81,7 +81,7 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar handles Desktop (hidden on mobile via md:flex) */}
-      <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} />
+      <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setOpen(true)} />
 
       {/* Main Content: 
           - ml-0 on mobile
@@ -151,7 +151,7 @@ export default function DashboardPage() {
       </main>
 
       {/* Mobile Nav handles small screens (hidden on desktop via md:hidden) */}
-      <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} />
+      <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setOpen(true)} />
     </div>
   );
 }

@@ -297,7 +297,7 @@ export default function ResourceDetail() {
           {/* Two-Column Grid Layout */}
           <div className="grid grid-cols-12 gap-8">
             {/* Left Column: Annotations (8/12) */}
-            <div className="col-span-12 lg:col-span-8 space-y-6">
+            <div className="col-span-12 lg:col-span-12 space-y-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="flex items-center gap-2 text-xl md:text-2xl font-bold text-[#0B3C5D]">
                   <Icon name="note" size="20px" /> Annotations / Notes
@@ -385,7 +385,7 @@ export default function ResourceDetail() {
             </div>
 
             {/* Right Column: Insight Sidebar (4/12) */}
-            <div className="col-span-12 lg:col-span-4 space-y-6">
+            {/* <div className="col-span-12 lg:col-span-4 space-y-6">
               <div className="h-40 bg-[url('/src/assets/insight-bg.png')] bg-cover bg-center flex items-end p-6 relative">
                 <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
                 <h3 className="relative text-white font-bold text-lg">
@@ -426,7 +426,7 @@ export default function ResourceDetail() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

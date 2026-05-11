@@ -2,7 +2,7 @@ import React from 'react';
 import Icon from './Icon';
 import { useNavigate } from 'react-router';
 
-export default function MobileNav({ activeItem, setActiveItem }) {
+export default function MobileNav({ activeItem, setActiveItem, onNewResearch }) {
   const menuItems = [
     { name: 'Vaults', id: 'vault' }, // Shortened for mobile space
     { name: 'Shared', id: 'user' },
@@ -33,7 +33,7 @@ export default function MobileNav({ activeItem, setActiveItem }) {
       })}
       
       {/* Floating Action Button for Mobile */}
-      <button onClick={() => navigate('/add-resource')} className="bg-[#0B3C5D] text-white p-4 rounded-full -mt-12 shadow-lg border-4 border-white active:scale-95 transition-transform">
+      <button onClick={() => onNewResearch()} className="bg-[#0B3C5D] text-white p-4 rounded-full -mt-12 shadow-lg border-4 border-white active:scale-95 transition-transform">
         <Icon name="add" size="20px" color="white" />
       </button>
     </nav>

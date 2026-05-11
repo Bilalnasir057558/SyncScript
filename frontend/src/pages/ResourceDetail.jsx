@@ -6,8 +6,10 @@ import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";
 import Icon from "../components/Icon";
 import Button from "../components/Button";
+import CreateVaultModal from "../components/CreateVault";
 import { Editor } from "@tinymce/tinymce-react";
 import axiosInstance from "../api/axios";
+import { createVault } from "../api/vault.api";
 import { useAuth } from "../context/auth.context";
 
 export default function ResourceDetail() {
@@ -15,6 +17,7 @@ export default function ResourceDetail() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("My Vaults");
   const location = useLocation();
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
 
   // 1. Updated State to handle real data
   const [resource, setResource] = useState(location.state?.resource || null);
@@ -178,6 +181,17 @@ export default function ResourceDetail() {
     }
   };
 
+  const handleCreateVault = async (data) => {
+    try {
+      await createVault(data);
+      alert("Vault created successfully.");
+      setIsVaultModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const handleEditAnnotation = async (annotationId, updatedContent) => {
     try {
       await axiosInstance.put(
@@ -212,6 +226,7 @@ export default function ResourceDetail() {
       <SideMenu
         activeItem={activeTab}
         setActiveItem={setActiveTab}
+        onNewResearch={() => setIsVaultModalOpen(true)}
       />
 
       <div className="grow flex flex-col">
@@ -430,7 +445,13 @@ export default function ResourceDetail() {
           </div>
         </main>
       </div>
-      <MobileNav activeItem={activeTab} setActiveItem={setActiveTab} />
+              {isVaultModalOpen && (
+                <CreateVaultModal
+                  onClose={() => setIsVaultModalOpen(false)}
+                  onCreate={handleCreateVault}
+                />
+              )}
+      <MobileNav activeItem={activeTab} setActiveItem={setActiveTab} onNewResearch={() => setIsVaultModalOpen(true)} />
     </div>
   );
 }

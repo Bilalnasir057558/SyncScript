@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import Icon from "../components/Icon";
 import SideMenu from "../components/Sidemenu";
 import MobileNav from "../components/MobileNav";
+import HeaderNavbar from "../components/HeaderNavbar";
 import VaultCard from "../components/VaultCard";
 import { createVault } from "../api/vault.api";
 import axiosInstance from "../api/axios";
@@ -37,9 +38,9 @@ export default function DashboardPage() {
         name: data.name,
         description: data.description,
       });
-      
+
       const savedVault = res.data;
-      
+
       // replace temp vault with real vault
       setVaults((prev) =>
         prev.map((vault) =>
@@ -83,12 +84,16 @@ export default function DashboardPage() {
       {/* Sidebar handles Desktop (hidden on mobile via md:flex) */}
       <SideMenu activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setOpen(true)} />
 
-      {/* Main Content: 
+      {/* NEW: Wrapper for Header and Main Content */}
+      <div className="grow flex flex-col min-w-0">
+        <HeaderNavbar />
+
+        {/* Main Content: 
           - ml-0 on mobile
           - ml-64 on desktop
           - pb-24 on mobile so content isn't hidden by the Bottom Nav
       */}
-      <main className="grow ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10">
+      <main className="grow mt-16 ml-0 md:ml-64 p-6 md:p-10 pb-24 md:pb-10 transition-all duration-200">
         <header className="flex justify-between items-center mb-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#0B3C5D]">
             {activeSection}
@@ -109,13 +114,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Dynamic Vaults */}
           {displayVaults.length > 0 ? (
-            displayVaults.map((vault) => (     
-              <Link 
-                key={vault.id} 
-                to={`/vaults/${vault.id}`}
-                state={ { vault } }
+            displayVaults.map((vault) => (
+              <Link
+                key={vault._id || vault.id}
+                to={`/vaults/${vault._id || vault.id}`}
+                state={{ vault }}
               >
-                    <VaultCard {...vault} />
+                <VaultCard {...vault} />
               </Link>
             ))
           ) : (
@@ -130,26 +135,26 @@ export default function DashboardPage() {
 
           {activeSection === "My Vaults" && (
             <div
-              onClick={() => setOpen(true)}
-              className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-37 cursor-pointer hover:bg-gray-100 transition"
-            >
-              <div className="text-center text-gray-400">
-                <p className="text-2xl">+</p>
-                <p className="text-sm">Start New Vault</p>
-              </div>
+                onClick={() => setOpen(true)}
+                className="border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center min-h-37 cursor-pointer hover:bg-gray-100 transition"
+              >
+                <div className="text-center text-gray-400">
+                  <p className="text-2xl">+</p>
+                  <p className="text-sm">Start New Vault</p>
+                </div>
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Modal */}
-        {open && (
-          <CreateVaultModal
-            onClose={() => setOpen(false)}
-            onCreate={handleCreateVault}
-          />
-        )}
-      </main>
-
+          {/* Modal */}
+          {open && (
+            <CreateVaultModal
+              onClose={() => setOpen(false)}
+              onCreate={handleCreateVault}
+            />
+          )}
+        </main>
+      </div>
       {/* Mobile Nav handles small screens (hidden on desktop via md:hidden) */}
       <MobileNav activeItem={activeSection} setActiveItem={setActiveSection} onNewResearch={() => setOpen(true)} />
     </div>

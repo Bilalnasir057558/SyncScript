@@ -290,7 +290,7 @@ By exploring SyncScript, you'll learn:
 
 <div align="center">
 
-### Made with ❤️ by [Your Name]
+### Made with ❤️
 
 ⭐ If you find this project useful, please consider starring it!
 

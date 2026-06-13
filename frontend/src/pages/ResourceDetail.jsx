@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router";
-import SideMenu from '../components/Sidemenu';
+import SideMenu from "../components/SideMenu"
 import Header from "../components/HeaderNavbar";
 import MobileNav from "../components/MobileNav";
 import AnnotationCard from "../components/AnnotationCard";

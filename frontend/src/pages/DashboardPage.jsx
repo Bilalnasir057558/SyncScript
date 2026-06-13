@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import CreateVaultModal from "../components/CreateVault";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
-import SideMenu from "../components/Sidemenu";
+import SideMenu from "../components/SideMenu";
 import MobileNav from "../components/MobileNav";
 import HeaderNavbar from "../components/HeaderNavbar";
 import VaultCard from "../components/VaultCard";
